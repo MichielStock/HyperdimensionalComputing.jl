@@ -97,3 +97,13 @@ sequence_embedding(sequence, token_vectors::Dict{T,V}, args...) where {T,V<:Abst
 sequence_embedding(sequence, ngrams_embedding::NGrams, args...) = 
                 sequence_embedding!(similar_vector(ngrams_embedding), sequence, ngrams_embedding, args...)
 
+# SET EMBEDDING
+
+# TODO: finish, export and test
+
+set_embedding!(result::AbstractHDV, elements, token_vectors) = aggregate!(result, (token_vectors[element] for element in elements))
+
+set_embedding(elements, token_vectors::AbstractVector{V}) where {V<:AbstractHDV} = set_embedding!(similar(first(token_vectors)), elements, token_vectors)
+
+set_embedding(elements, token_vectors::Dict{T,V}, args...) where {T,V<:AbstractHDV} = 
+            set_embedding!(similar(first(token_vectors)[2]), elements, token_vectors, args...)

@@ -4,6 +4,7 @@ using Distances
 
 export AbstractHDV, BinaryHDV, BipolarHDV,
     GradedBipolarHDV, RealHDV, GradedHDV
+export normalize!
 export offsetcombine, offsetcombine!
 export aggregate, aggregate!, aggregatewith!, bind, bind!, Π, Π!, resetoffset!
 export sequence_embedding, sequence_embedding!
@@ -13,7 +14,7 @@ export similarity, jacc_sim, cos_sim
 export train, predict, retrain!
 
 include("vectors.jl")
-include("operations.jl")
+include("operators.jl")
 include("encoding.jl")
 include("inference.jl")
 include("learning.jl")
