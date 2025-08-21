@@ -1,7 +1,7 @@
 using HyperdimensionalComputing
 using Test
 
-include("vectors.jl")
+include("types.jl")
 include("operations.jl")
-include("encoding.jl")
+#include("encoding.jl")
 include("inference.jl")

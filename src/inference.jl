@@ -4,31 +4,21 @@ inference.jl; This file implements functions to compare two hyperdimensional vec
 
 using LinearAlgebra
 
-LinearAlgebra.norm(hdv::AbstractHDV) = norm(hdv.v)
+LinearAlgebra.dot(u::AbstractHV, v::AbstractHV) = dot(u.v, v.v)
 
-function LinearAlgebra.dot(x::AbstractHDV, y::AbstractHDV)
-    nx = normalizer(x)
-    ny = normalizer(y)
-    if x.offset == y.offset  
-        return sum(((vx,vy),)->dot(nx(vx),ny(vy)), zip(x.v, y.v))
-    else
-        return sum(((vx,vy),)->dot(nx(vx),ny(vy)), zip(x, y))
-    end
-end
+LinearAlgebra.dot(u::BipolarHV, v::BipolarHV) = 4dot(u.v, v.v) - 2sum(u.v) - 2sum(v.v) + length(u)
 
-cos_sim(x::AbstractVector, y::AbstractVector) = dot(x, y) / (norm(x) * norm(y))
+sim_cos(u::AbstractVector, v::AbstractVector) = dot(u, v) / (norm(u) * norm(v))
 
-jacc_sim(x::AbstractVector, y::AbstractVector) = dot(x, y) / sum(t->t[1]+t[2]-t[1]*t[2], zip(x,y))
+sim_jacc(u::AbstractVector, v::AbstractVector) = dot(u, v) / sum(ui+vi-ui*vi for (ui, vi) in zip(u, v))
 
-# specific similarities
-# for HDVs that can both be pos and neg,
-# we use cosine similarity
+dist_hamming(u::AbstractVector, v::AbstractVector) = sum(abs(ui-vi) for (ui, vi) in zip(u, v))
 
-similarity(x::BipolarHDV, y::BipolarHDV) = cos_sim(x, y)
-similarity(x::GradedBipolarHDV, y::GradedBipolarHDV) = cos_sim(x, y)
-similarity(x::RealHDV, y::RealHDV) = cos_sim(x, y)
+similarity(x::BipolarHV, y::BipolarHV) = sim_cos(x, y)
+similarity(x::TernaryHV, y::TernaryHV) = sim_cos(x, y)
+similarity(x::GradedBipolarHV, y::GradedBipolarHV) = sim_cos(x, y)
+similarity(x::RealHV, y::RealHV) = sim_cos(x, y)
 
-similarity(x::BinaryHDV, y::BinaryHDV) = jacc_sim(x, y)
-similarity(x::GradedHDV, y::GradedHDV) = jacc_sim(x, y)
+similarity(x::BinaryHV, y::BinaryHV) = sim_jacc(x, y)
+similarity(x::GradedHV, y::GradedHV) = sim_jacc(x, y)
 
-#strange_fun(x, y) = sum((a, b)->max(a*b-sqrt(1-a^2)*sqrt(1-b^2),0.0), zip(x, y))
