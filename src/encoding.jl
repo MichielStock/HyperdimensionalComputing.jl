@@ -1,109 +1,490 @@
-#=
-encoding.jl; This file implements functions to encode token-based data, be it alphabets, strings or full classes of text.
-=#
+"""
+    multiset(vs::AbstractVector{<:T})::T where {T <: AbstractHDV}
 
-# SEQUENCE EMBEDDING
+Multiset of input hypervectors, bundles all the input hypervectors together.
 
-# precomputing of the n-grams
+# Arguments
+- `vs::AbstractVector{<:AbstractHDV}`: Hypervectors
 
-ngrams_recursion(d::AbstractDict{K,V}, hdv::AbstractHDV) where {K,V<:AbstractHDV} = 
-    Dict(k => hdv * Π(v, 1) for (k, v) in d)
+# Example
+```
+julia> vs = [BinaryHDV(10) for _ in 1:10]
+10-element Vector{BinaryHDV}:
+ [0, 1, 0, 0, 1, 1, 0, 1, 1, 1]
+ [1, 0, 1, 0, 0, 0, 1, 1, 1, 0]
+ [0, 1, 0, 1, 0, 0, 1, 0, 0, 0]
+ [0, 1, 0, 1, 1, 0, 1, 0, 1, 0]
+ [1, 1, 0, 0, 1, 0, 1, 1, 1, 0]
+ [0, 0, 1, 1, 1, 1, 0, 0, 1, 0]
+ [0, 0, 0, 0, 1, 1, 0, 1, 1, 0]
+ [1, 1, 1, 0, 1, 1, 0, 0, 1, 1]
+ [1, 1, 0, 1, 1, 0, 0, 0, 0, 0]
+ [1, 1, 0, 0, 0, 1, 1, 0, 0, 0]
 
-ngrams_recursion(d::AbstractDict{K,V}, hdv::AbstractHDV) where {K,V<:AbstractDict} = 
-    Dict(k => ngrams_recursion(v, hdv) for (k, v) in d)
+julia> multiset(vs)
+10-element BinaryHDV:
+ 0
+ 1
+ 0
+ 0
+ 1
+ 0
+ 0
+ 0
+ 1
+ 0
+```
 
-function ngrams_recursion(d::AbstractDict{K,V}, hdvs) where {K,V}
-    result = Dict{K,Dict{K,V}}()
-    for k in keys(d)
-        result[k] = ngrams_recursion(d, hdvs[k])
-    end
-    return result
+# Extended help
+
+This encoding is based on the following mathematical notation:
+
+```math
+\\oplus_{i=1}^{m} V_i
+```
+
+where `V` is the hypervector collection, `m` is the size of the hypervector collection,
+`i` is the position of the entry in the collection, and `\\oplus` is the bundling operation.
+
+# References
+
+- [Torchhd documentation](https://torchhd.readthedocs.io/en/stable/generated/torchhd.multiset.html)
+
+# See also
+
+- [`multibind`](@ref): Multibind encoding, binding-variant of this encoder
+"""
+function multiset(vs::AbstractVector{<:T})::T where {T <: AbstractHDV}
+    return aggregate(vs)
 end
 
-# structure to store the N-grams
-struct NGrams{V,D}
-    d::D
-    NGrams(V::Type, d::AbstractDict) = new{V,typeof(d)}(d)
+"""
+    multibind(vs::AbstractVector{<:AbstractHDV})
+
+Binding of multiple hypervectors, binds all the input hypervectors together.
+
+# Arguments
+- `vs::AbstractVector{<:AbstractHDV}`: Hypervectors
+
+# Examples
+```
+julia> vs = [BinaryHDV(10) for _ in 1:10]
+10-element Vector{BinaryHDV}:
+ [0, 1, 0, 0, 1, 1, 0, 1, 1, 1]
+ [1, 0, 1, 0, 0, 0, 1, 1, 1, 0]
+ [0, 1, 0, 1, 0, 0, 1, 0, 0, 0]
+ [0, 1, 0, 1, 1, 0, 1, 0, 1, 0]
+ [1, 1, 0, 0, 1, 0, 1, 1, 1, 0]
+ [0, 0, 1, 1, 1, 1, 0, 0, 1, 0]
+ [0, 0, 0, 0, 1, 1, 0, 1, 1, 0]
+ [1, 1, 1, 0, 1, 1, 0, 0, 1, 1]
+ [1, 1, 0, 1, 1, 0, 0, 0, 0, 0]
+ [1, 1, 0, 0, 0, 1, 1, 0, 0, 0]
+
+julia> multibind(vs)
+10-element BinaryHDV:
+ 1
+ 1
+ 1
+ 0
+ 1
+ 1
+ 1
+ 0
+ 1
+ 0
+```
+
+# Extended help
+
+This encoding is based on the following mathematical notation:
+
+```math
+\\otimes_{i=1}^{m} V_i
+```
+
+where `V` is the hypervector collection, `m` is the size of the hypervector collection,
+`i` is the position of the entry in the collection, and `\\otimes` is the binding operation.
+
+# References
+
+- [Torchhd documentation](https://torchhd.readthedocs.io/en/stable/generated/torchhd.multibind.html)
+
+# See also
+
+- [`multiset`](@ref): Multiset encoding, bundling-variant of this encoder
+"""
+function multibind(vs::AbstractVector{<:AbstractHDV})
+    return bind(vs)
 end
 
-Base.show(io::IO, ngrams::NGrams) = print("n-gram embedding of order $(order(ngrams)) for type $(vectortype(ngrams))")
 
-# TODO: consider using an N-dim array?
+"""
+    bundlesequence(vs::AbstractVector{<:AbstractHDV})
 
-# Generates nested dictionary with ngrams 
-# needs to be hard-coded for dispatch
-#=
-compute_1_grams(hdvs, alphabet=keys(hdvs)) = NGrams(eltype(hdvs), Dict(c=>hdvs[c] for c in alphabet))
-compute_2_grams(hdvs, alphabet=1:length(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_1_grams(hdvs, alphabet).d, hdvs))
-compute_3_grams(hdvs, alphabet=1:length(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_2_grams(hdvs, alphabet).d, hdvs))
-compute_4_grams(hdvs, alphabet=1:length(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_3_grams(hdvs, alphabet).d, hdvs))
-compute_5_grams(hdvs, alphabet=1:length(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_4_grams(hdvs, alphabet).d, hdvs))
-compute_6_grams(hdvs, alphabet=1:length(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_5_grams(hdvs, alphabet).d, hdvs))
-compute_7_grams(hdvs, alphabet=1:length(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_6_grams(hdvs, alphabet).d, hdvs))
-compute_8_grams(hdvs, alphabet=1:length(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_7_grams(hdvs, alphabet).d, hdvs))
-=#
-compute_1_grams(hdvs, alphabet=keys(hdvs)) = NGrams(eltype(hdvs), Dict(c=>hdvs[c] for c in alphabet))
-compute_2_grams(hdvs, alphabet=keys(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_1_grams(hdvs, alphabet).d, hdvs))
-compute_3_grams(hdvs, alphabet=keys(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_2_grams(hdvs, alphabet).d, hdvs))
-compute_4_grams(hdvs, alphabet=keys(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_3_grams(hdvs, alphabet).d, hdvs))
-compute_5_grams(hdvs, alphabet=keys(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_4_grams(hdvs, alphabet).d, hdvs))
-compute_6_grams(hdvs, alphabet=keys(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_5_grams(hdvs, alphabet).d, hdvs))
-compute_7_grams(hdvs, alphabet=keys(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_6_grams(hdvs, alphabet).d, hdvs))
-compute_8_grams(hdvs, alphabet=keys(hdvs)) = NGrams(eltype(hdvs), ngrams_recursion(compute_7_grams(hdvs, alphabet).d, hdvs))
+Bundling-based sequence. The first value is not permuted, the last value is permuted n-1 times.
 
-# get the embedding on the k-gram that starts at position i
-get_gram_embedding(sequence, i, embeddings::Dict{K,V}) where {K,V<:Dict} =
-            get_gram_embedding(sequence, i+1, embeddings[sequence[i]])
-get_gram_embedding(sequence, i, embeddings::Dict{K,V}) where {K,V<:AbstractHDV} = embeddings[sequence[i]]
-get_gram_embedding(sequence, i, embeddings::NGrams) = get_gram_embedding(sequence, i, embeddings.d)
+# Arguments
+- `vs::AbstractVector{<:AbstractHDV}`: Hypervector sequence
 
-order(embeddings::Dict{K,V}) where {K,V<:Dict} = order(first(embeddings::Dict{K,V})[2]) + 1
-order(embeddings::Dict) = 1
-order(embeddings::NGrams) = order(embeddings.d)
+# Examples
+```
+julia> vs = [BinaryHDV(10) for _ in 1:10]
+10-element Vector{BinaryHDV}:
+ [0, 1, 0, 0, 1, 1, 0, 1, 1, 1]
+ [1, 0, 1, 0, 0, 0, 1, 1, 1, 0]
+ [0, 1, 0, 1, 0, 0, 1, 0, 0, 0]
+ [0, 1, 0, 1, 1, 0, 1, 0, 1, 0]
+ [1, 1, 0, 0, 1, 0, 1, 1, 1, 0]
+ [0, 0, 1, 1, 1, 1, 0, 0, 1, 0]
+ [0, 0, 0, 0, 1, 1, 0, 1, 1, 0]
+ [1, 1, 1, 0, 1, 1, 0, 0, 1, 1]
+ [1, 1, 0, 1, 1, 0, 0, 0, 0, 0]
+ [1, 1, 0, 0, 0, 1, 1, 0, 0, 0]
 
-vectortype(embeddings::NGrams{V,D}) where {V, D} = V
+julia> bundlesequence(vs)
+10-element BinaryHDV:
+ 0
+ 1
+ 0
+ 0
+ 0
+ 0
+ 0
+ 0
+ 1
+ 1
+```
 
-get_leaf(d::AbstractDict{K,V}) where {K,V<:AbstractDict} = get_leaf(d[first(keys(d))])
-get_leaf(d::AbstractDict) = d[first(keys(d))]
+# Extended help
 
-similar_vector(ngrams::NGrams) = similar(get_leaf(ngrams.d))
+This encoding is based on the following mathematical notation:
 
-function sequence_embedding!(result::AbstractHDV, sequence, token_vectors, w=3)
-    fill!(result.v, zero(eltype(result)))
-    tmp = similar(result)
-    n = length(sequence)
-    for i in 1:n-w
-        fill!(tmp.v, neutralbind(tmp))
-        for k in (w-1):-1:0
-            v = token_vectors[sequence[i+k]]
-            offsetcombine!(tmp.v, bindfun(tmp), tmp.v, v.v, v.offset + k)
-        end
-        offsetcombine!(result.v, aggfun(result), result.v, tmp.v, 0)
-    end
-    result.m = length(sequence)-w
-    normalize!(result)
-    return result
+```math
+\\oplus_{i=1}^{m} \\Pi(V_i, i-1)
+```
+
+where `V` is the hypervector collection, `m` is the size of the hypervector collection,
+`i` is the position of the entry in the collection, and `\\oplus` and `\\Pi` are the
+bundling and permutation operations.
+
+# References
+
+- [Torchhd documentation](https://torchhd.readthedocs.io/en/stable/generated/torchhd.bundle_sequence.html)
+
+# See also
+
+- [`bindsequence`](@ref): Binding-sequence encoding, binding-variant of this encoder
+"""
+function bundlesequence(vs::AbstractVector{<:AbstractHDV})
+    @assert length(vs) > 1 "Can't bundle sequence of a single hypervector"
+    return aggregate([Π(hv, i - 1) for (i, hv) in enumerate(vs)])
 end
 
-function sequence_embedding!(result::AbstractHDV, sequence, ngrams_embedding::NGrams)
-    fill!(result.v, zero(eltype(result)))
-    n = length(sequence)
-    w = order(ngrams_embedding)
-    for i in 1:n-w
-        hdv = get_gram_embedding(sequence, i, ngrams_embedding)
-        offsetcombine!(result.v, aggfun(result), result.v, hdv.v, 0)
-    end
-    result.m = length(sequence)-w
-    normalize!(result)
-    return result
+"""
+    bindsequence(vs::AbstractVector{<:AbstractHDV})
+
+Binding-based sequence. The first value is not permuted, the last value is permuted n-1 times.
+
+# Arguments
+- `vs::AbstractVector{<:AbstractHDV}`: Hypervector sequence
+
+# Examples
+```
+julia> vs = [BinaryHDV(10) for _ in 1:10]
+10-element Vector{BinaryHDV}:
+ [0, 1, 0, 0, 1, 1, 0, 1, 1, 1]
+ [1, 0, 1, 0, 0, 0, 1, 1, 1, 0]
+ [0, 1, 0, 1, 0, 0, 1, 0, 0, 0]
+ [0, 1, 0, 1, 1, 0, 1, 0, 1, 0]
+ [1, 1, 0, 0, 1, 0, 1, 1, 1, 0]
+ [0, 0, 1, 1, 1, 1, 0, 0, 1, 0]
+ [0, 0, 0, 0, 1, 1, 0, 1, 1, 0]
+ [1, 1, 1, 0, 1, 1, 0, 0, 1, 1]
+ [1, 1, 0, 1, 1, 0, 0, 0, 0, 0]
+ [1, 1, 0, 0, 0, 1, 1, 0, 0, 0]
+
+julia> bindsequence(vs)
+10-element BinaryHDV:
+ 0
+ 1
+ 1
+ 0
+ 1
+ 1
+ 0
+ 1
+ 1
+ 1
+```
+
+# Extended help
+
+This encoding is based on the following mathematical notation:
+
+```math
+\\otimes_{i=1}^{m} \\Pi(V_i, i-1)
+```
+
+where `V` is the hypervector collection, `m` is the size of the hypervector collection,
+`i` is the position of the entry in the collection, and `\\otimes` and `\\Pi` are the
+binding and permutation operations.
+
+# References
+
+- [Torchhd documentation](https://torchhd.readthedocs.io/en/stable/generated/torchhd.bind_sequence.html)
+
+# See also
+
+- [`bundlesequence`](@ref): Bundle-sequence encoding, bundling-variant of this encoder
+"""
+function bindsequence(vs::AbstractVector{<:AbstractHDV})
+    @assert length(vs) > 1 "Can't bind sequence of a single hypervector"
+    return bind([Π(hv, i - 1) for (i, hv) in enumerate(vs)])
 end
 
-sequence_embedding(sequence, token_vectors::AbstractVector{V}, args...) where {V<:AbstractHDV} = 
-                sequence_embedding!(similar(first(token_vectors)), sequence, token_vectors, args...)
-    
-sequence_embedding(sequence, token_vectors::Dict{T,V}, args...) where {T,V<:AbstractHDV} = 
-                sequence_embedding!(similar(first(token_vectors)[2]), sequence, token_vectors, args...)
+"""
+    hashtable(keys::T, values::T) where {T <: AbstractVector{<:AbstractHDV}}
 
-sequence_embedding(sequence, ngrams_embedding::NGrams, args...) = 
-                sequence_embedding!(similar_vector(ngrams_embedding), sequence, ngrams_embedding, args...)
+Hash table from keys-values hypervector pairs. Keys and values must be the same length in order
+to encode as hypervector.
 
+# Arguments
+- `keys::AbstractVector{<:AbstractHDV}`: Keys hypervectors
+- `values::AbstractVector{<:AbstractHDV}`: Values hypervectors
+
+# Example
+```
+julia> ks = [BinaryHDV(10) for _ in 1:5]
+5-element Vector{BinaryHDV}:
+ [0, 0, 0, 1, 0, 1, 1, 0, 0, 0]
+ [1, 0, 1, 0, 1, 0, 1, 0, 1, 1]
+ [0, 0, 0, 0, 1, 1, 1, 0, 1, 1]
+ [1, 0, 0, 0, 0, 1, 1, 0, 1, 0]
+ [0, 1, 1, 1, 1, 0, 0, 1, 1, 1]
+
+julia> vs = [BinaryHDV(10) for _ in 1:5]
+5-element Vector{BinaryHDV}:
+ [0, 1, 0, 0, 1, 1, 0, 1, 0, 0]
+ [1, 0, 1, 1, 1, 0, 1, 0, 0, 0]
+ [0, 0, 0, 0, 0, 1, 1, 0, 1, 0]
+ [0, 1, 1, 0, 0, 0, 0, 1, 0, 1]
+ [0, 1, 1, 0, 0, 0, 1, 1, 0, 1]
+
+julia> hashtable(ks, vs)
+10-element BinaryHDV:
+ 0
+ 0
+ 0
+ 1
+ 1
+ 0
+ 1
+ 0
+ 1
+ 1
+```
+
+# Extended help
+
+This encoding is based on the following mathematical notation:
+
+```math
+\\otimes_{i=1}^{m} K_i \\otimes V_i
+```
+
+where `K` and `V` are the key and value hypervector collections, `m` is the size of the
+hypervector collection, `i` is the position of the entry in the collection, and `\\otimes`
+and `\\oplus` are the binding and bundling operations.
+
+# References
+
+- [Torchhd documentation](https://torchhd.readthedocs.io/en/stable/generated/torchhd.hash_table.html)
+"""
+function hashtable(keys::T, values::T) where {T <: AbstractVector{<:AbstractHDV}}
+    @assert length(keys) == length(values) "Number of keys and values aren't equal"
+    return aggregate(map(bind, zip(keys, values)))
+end
+
+"""
+    crossproduct(U::T, V::T) where {T <: AbstractVector{<:AbstractHDV}}
+
+Cross product between two sets of hypervectors.
+
+
+# Arguments
+- `U::AbstractVector{<:AbstractHDV}`: Hypervectors
+- `V::AbstractVector{<:AbstractHDV}`: Hypervectors
+
+# Examples
+```
+julia> us = [BinaryHDV(10) for _ in 1:5]
+5-element Vector{BinaryHDV}:
+ [1, 1, 1, 1, 1, 0, 0, 1, 0, 0]
+ [0, 1, 0, 0, 1, 1, 1, 0, 1, 0]
+ [0, 1, 1, 1, 1, 0, 0, 1, 1, 1]
+ [0, 1, 1, 0, 1, 0, 1, 1, 1, 0]
+ [1, 0, 0, 1, 0, 0, 1, 1, 1, 1]
+
+julia> vs = [BinaryHDV(10) for _ in 1:5]
+5-element Vector{BinaryHDV}:
+ [0, 1, 1, 1, 1, 1, 0, 1, 0, 0]
+ [0, 0, 1, 0, 0, 1, 1, 0, 0, 1]
+ [0, 0, 0, 0, 1, 0, 0, 1, 0, 1]
+ [1, 0, 1, 1, 0, 1, 1, 1, 1, 1]
+ [1, 0, 1, 0, 0, 1, 0, 1, 0, 1]
+
+julia> crossproduct(us, vs)
+10-element BinaryHDV:
+ 0
+ 0
+ 1
+ 0
+ 1
+ 0
+ 0
+ 1
+ 0
+ 1
+```
+
+# Extended help
+
+This encoding strategy first creates a multiset from both input hypervector sets,
+which are then bound together to generate all cross products, i.e.
+
+U₁ × V₁ + U₁ × V₂ + ... + U₁ × Vₘ + ... + Uₙ × Vₘ
+
+This encoding is based on the following formula:
+
+```math
+(\\oplus_{i=1}^{m} U_i) \\otimes (\\oplus_{i=1}^{n} V_i)
+```
+
+where U and V are collections of hypervectors, `m` and `n` are the sizes of the U and V collections,
+`ì` is the position in the hypervector collection, and `\\oplus` and `\\otimes` are the bundling
+and binding operations.
+
+# References
+
+- [Torchhd documentation](https://torchhd.readthedocs.io/en/stable/generated/torchhd.cross_product.html)
+"""
+function crossproduct(U::T, V::T) where {T <: AbstractVector{<:AbstractHDV}}
+    # TODO: This should be bundled without normalizing
+    return aggregate([multiset(U), multiset(V)]; norm = false)
+end
+
+"""
+    ngrams(vs::AbstractVector{<:AbstractHDV}, n::Int = 3)
+
+Creates a hypervector with the _n_-gram statistics of the input.
+
+# Arguments
+- `vs::AbstractVector{<:AbstractHDV}`: Hypervector collection
+- `n::Int = 3`: _n_-gram size
+
+# Examples
+```
+julia> vs = [BinaryHDV(10) for _ in 1:10]
+10-element Vector{BinaryHDV}:
+ [0, 1, 0, 0, 1, 0, 1, 0, 0, 1]
+ [0, 0, 1, 1, 1, 0, 0, 1, 1, 1]
+ [0, 0, 1, 0, 0, 1, 1, 1, 0, 0]
+ [1, 0, 0, 0, 1, 0, 0, 1, 1, 1]
+ [0, 1, 0, 0, 1, 0, 1, 1, 0, 0]
+ [1, 1, 1, 0, 1, 0, 0, 1, 0, 1]
+ [1, 0, 0, 0, 1, 0, 0, 1, 1, 0]
+ [0, 1, 0, 1, 0, 0, 0, 1, 1, 0]
+ [0, 0, 0, 1, 1, 1, 1, 0, 0, 1]
+ [1, 1, 0, 0, 0, 1, 1, 1, 0, 1]
+
+julia> ngrams(vs)
+10-element BinaryHDV:
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 0
+ 1
+ 0
+ 1
+```
+
+# Extended help
+
+This encoding is defined by the following mathematical notation:
+
+```math
+\\oplus_{i=1}^{m-n}\\otimes_{j=1}^{n-1}\\Pi^{n-j-1}(V_{i+j})
+```
+
+where `V` is the collection of hypervectors, `m` is the number of hypervectors in the
+collection `V`, `n` is the window size, `i` is the position in the sequence, `j` is the
+position in the _n_-gram, and `\\oplus`, `\\otimes` and `\\Pi` are the bundling, binding
+and permutation operations.
+
+!!! note
+    - For `n = 1` use `multiset()` instead
+    - For `n = m` use `bindsequence()` instead
+
+# See also
+
+- [`multiset`](@ref): Multiset encoding, equivalent to `ngram(vs, 1)`
+- [`bindsequence`](@ref): Bind-sequence encoding, equivalent to `ngram(vs, length(vs))`
+
+# References
+
+- [Torchhd documentation](https://torchhd.readthedocs.io/en/stable/generated/torchhd.ngrams.html)
+
+"""
+function ngrams(vs::AbstractVector{<:AbstractHDV}, n::Int = 3)
+    m = length(vs)
+    @assert 1 <= n <= length(vs) "`n` must be 1 ≤ n ≤ $m"
+    return aggregate([bind([Π(vs[i + j], j - 1) for j in 1:n]) for i in 1:(m - n)])
+end
+
+"""
+    graph(source::T, target::T, directed::Bool = false)
+
+Graph for `source`-`target` pairs. Can be directed or undirected.
+
+# Arguments
+- `source::T`: Source node hypervectors
+- `target::T`: Target node hypervectors
+- `directed::Bool = false`: Whether the graph is directed or not
+
+# Example
+
+# Extended help
+
+This encoding is based on the following mathematical notation:
+
+*Undirected graphs*
+```math
+\\otimes_{i=1}^{m} S_i \\otimes T_i
+```
+
+*Directed graphs*
+```math
+\\otimes_{i=1}^{m} S_i \\otimes \\Pi(T_i)
+```
+
+where `K` and `V` are the key and value hypervector collections, `m` is the size of the
+hypervector collection, `i` is the position of the entry in the collection, and `\\otimes`,
+`\\oplus` and `\\Pi` are the binding, bundling and permutation operations.
+
+# See also
+
+- [`hashtable`](@ref): Hash table encoding, underlying encoding strategy of this encoder.
+
+# References
+
+- [Torchhd documentation](https://torchhd.readthedocs.io/en/stable/generated/torchhd.graph.html)
+
+"""
+function graph(source::T, target::T; directed::Bool = false) where {T <: AbstractVector{<:AbstractHDV}}
+    @assert length(source) == length(target) "`source` and `target` must be the same length"
+    return hashtable(source, Π.(target, convert(Int, directed)))
+end
