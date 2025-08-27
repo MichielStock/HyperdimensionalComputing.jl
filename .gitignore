@@ -4,3 +4,4 @@ data/
 .vscode/
 literature/
 Manifest.toml
+docs/build/

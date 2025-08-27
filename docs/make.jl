@@ -1,7 +1,20 @@
 using HyperdimensionalComputing
 using Documenter
+using Pkg, Literate, Glob
 
-DocMeta.setdocmeta!(HyperdimensionalComputing, :DocTestSetup, :(using HyperdimensionalComputing); recursive = true)
+ENV["DATADEPS_ALWAYS_ACCEPT"] = true
+
+# Compile Literate.jl examples to markdown
+TUTORIALS = joinpath(@__DIR__, "src", "examples")
+SOURCE_FILES = Glob.glob("*.jl", TUTORIALS)
+foreach(fn -> Literate.markdown(fn, TUTORIALS), SOURCE_FILES)
+
+# Setup Documenter.jl
+DocMeta.setdocmeta!(
+    HyperdimensionalComputing,
+    :DocTestSetup,
+    :(using HyperdimensionalComputing); recursive = true
+)
 
 # Get repository information dynamically for fork support
 repo_url = get(ENV, "GITHUB_REPOSITORY", "michielstock/HyperdimensionalComputing.jl")
@@ -10,7 +23,7 @@ repo_owner = split(repo_url, "/")[1]
 
 makedocs(;
     modules = [HyperdimensionalComputing],
-    authors = "Michiel Stock, Carlos Vigil-Vásquez, Steff Taelman, Dimi Boeckaerts",
+    authors = "Carlos Vigil-Vásquez, Dimi Boeckaerts, Michiel Stock, Steff Taelman",
     repo = "https://github.com/$repo_url/blob/{commit}{path}#{line}",
     sitename = "HyperdimensionalComputing.jl",
     format = Documenter.HTML(;
@@ -20,9 +33,12 @@ makedocs(;
         edit_link = "main",
     ),
     pages = [
-        "Home" => "index.md",
-        "API Reference" => "api.md",
-        "Examples" => "examples.md",
+        "HyperdimensionalComputing.jl" => "index.md",
+        "Examples" => [
+            "Introduction to HDC" => "examples/introduction-to-hdc.md",
+            "What's the Dollar of Mexico?" => "examples/whats-the-dollar-of-mexico.md",
+        ],
+        "API" => "api.md",
     ],
     checkdocs = :exports,
 )

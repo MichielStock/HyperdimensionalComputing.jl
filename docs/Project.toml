@@ -1,9 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
+Handcalcs = "e8a07092-c156-4455-ab8e-ed8bc81edefb"
 HyperdimensionalComputing = "ebb7690e-f605-4e7a-86a0-727dbed6b293"
-CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
-LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-MLJ = "add582a8-e3ab-11e8-2d5e-e98b27df1bc7"
-ShiftedArrays = "1277b4bf-5013-50f5-be3d-901d8477a67a"
-StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
