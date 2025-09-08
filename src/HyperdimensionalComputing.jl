@@ -4,6 +4,7 @@ using Distances, Random, Distributions, LinearAlgebra
 
 export AbstractHV, BinaryHV, BipolarHV,
     GradedBipolarHV, RealHV, GradedHV, TernaryHV
+export normalize!, normalize
 export bundle, bind, shift!, shift, ρ, ρ!, perturbate, perturbate!
 export sequence_embedding, sequence_embedding!
 export compute_1_grams, compute_2_grams, compute_3_grams, compute_4_grams, compute_5_grams,
