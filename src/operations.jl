@@ -58,7 +58,7 @@ end
 
 # computes `r[i] = f(x[i], y[i+offset])`
 # assumes postive offset (for now)
-@inline function offsetcombine!(r, f, x, y, offset=0)
+@inline function offsetcombine!(r, f, x, y, offset = 0)
     @assert length(r) == length(x) == length(y)
     n = length(r)
     if offset == 0
@@ -73,7 +73,7 @@ end
     return r
 end
 
-@inline function offsetcombine(f, x::V, y::V, offset=0) where {V<:AbstractVecOrMat}
+@inline function offsetcombine(f, x::V, y::V, offset = 0) where {V <: AbstractVecOrMat}
     @assert length(x) == length(y)
     r = similar(x)
     n = length(r)
@@ -93,7 +93,7 @@ end
 # -----------
 
 # binary and bipolar: use majority
-function bundle(hvr::Union{BinaryHV,BipolarHV}, hdvs, r)
+function bundle(hvr::Union{BinaryHV, BipolarHV}, hdvs, r)
     m = length(hdvs)
     for hv in hdvs
         r .+= hv.v
@@ -108,9 +108,9 @@ end
 
 # ternary: just add them, no normalization by default
 function bundle(
-    ::TernaryHV, hdvs, r;
-    normalize=false
-)
+        ::TernaryHV, hdvs, r;
+        normalize = false
+    )
     for hv in hdvs
         r .+= hv.v
     end
@@ -149,7 +149,7 @@ function bundle(hdvs; kwargs...)
     return bundle(hv, hdvs, r, kwargs...)
 end
 
-Base.:+(hv1::HV, hv2::HV) where {HV<:AbstractHV} = bundle((hv1, hv2))
+Base.:+(hv1::HV, hv2::HV) where {HV <: AbstractHV} = bundle((hv1, hv2))
 
 # BINDING
 # -------
@@ -161,33 +161,33 @@ Base.bind(hv1::RealHV, hv2::RealHV) = RealHV(hv1.v .* hv2.v)
 Base.bind(hv1::GradedHV, hv2::GradedHV) = GradedHV(fuzzy_xor.(hv1.v, hv2.v))
 Base.bind(hv1::GradedBipolarHV, hv2::GradedBipolarHV) = GradedBipolarHV(fuzzy_xor_bipol.(hv1.v, hv2.v))
 
-Base.:*(hv1::HV, hv2::HV) where {HV<:AbstractHV} = bind(hv1, hv2)
+Base.:*(hv1::HV, hv2::HV) where {HV <: AbstractHV} = bind(hv1, hv2)
 
 
 # SHIFTING
 # --------
 
-shift!(hv::AbstractHV, k=1) = circshift!(hv.v, k)
+shift!(hv::AbstractHV, k = 1) = circshift!(hv.v, k)
 
-function shift(hv::AbstractHV, k=1)
+function shift(hv::AbstractHV, k = 1)
     r = similar(hv)
     r.v .= circshift(hv.v, k)
     return r
 end
 
-function shift!(hv::V, k=1) where {V<:Union{BinaryHV,BipolarHV}}
+function shift!(hv::V, k = 1) where {V <: Union{BinaryHV, BipolarHV}}
     v = similar(hv.v)  # empty bitvector
     hv.v .= circshift!(v, hv.v, k)
     return hv
 end
 
-function shift(hv::V, k=1) where {V<:Union{BinaryHV,BipolarHV}}
+function shift(hv::V, k = 1) where {V <: Union{BinaryHV, BipolarHV}}
     v = similar(hv.v)  # empty bitvector
     return V(circshift!(v, hv.v, k))
 end
 
-ρ(hv::AbstractHV, k=1) = shift(hv, k)
-ρ!(hv::AbstractHV, k=1) = shift!(hv, k)
+ρ(hv::AbstractHV, k = 1) = shift(hv, k)
+ρ!(hv::AbstractHV, k = 1) = shift!(hv, k)
 
 
 # COMPARISON
@@ -206,7 +206,7 @@ One can specify either:
 - `atol=N/100` number of matches more than due to chance needed for being assumed similar
 - `ptol=0.01` threshold for seeing that many matches due to chance
 """
-function Base.isapprox(u::T, v::T; atol=length(u) / 100, ptol=0.01) where {T<:Union{BinaryHV,BipolarHV}}
+function Base.isapprox(u::T, v::T; atol = length(u) / 100, ptol = 0.01) where {T <: Union{BinaryHV, BipolarHV}}
     @assert length(u) == length(v) "Vectors have to be of equal length"
     N = length(u)
     missmatches = sum(ui != vi for (ui, vi) in zip(u, v))
@@ -226,7 +226,7 @@ One can specify either:
 - `ptol=1e-10` threshold for seeing that many matches due to chance
 - `N_bootstap=200` number of samples for bootstrapping
 """
-function Base.isapprox(u::T, v::T; ptol=1.0e-10, N_bootstrap=500) where {T<:AbstractHV}
+function Base.isapprox(u::T, v::T; ptol = 1.0e-10, N_bootstrap = 500) where {T <: AbstractHV}
     @assert length(u) == length(v) "Vectors have to be of equal length"
     N = length(u)
     # bootstrap to find the zero distr
@@ -262,17 +262,17 @@ function randbv(n::Int, I)
 end
 
 
-function perturbate!(::Type{HVByteVec}, hv::HV, I, dist=eldist(hv)) where {HV<:AbstractHV}
+function perturbate!(::Type{HVByteVec}, hv::HV, I, dist = eldist(hv)) where {HV <: AbstractHV}
     hv.v[I] .= rand(dist, length(I))
     return hv
 end
 
-function perturbate!(::Type{HVByteVec}, hv::HV, M::BitVector, dist=eldist(hv)) where {HV<:AbstractHV}
+function perturbate!(::Type{HVByteVec}, hv::HV, M::BitVector, dist = eldist(hv)) where {HV <: AbstractHV}
     hv.v[M] .= rand(dist, sum(M))
     return hv
 end
 
-function perturbate!(::Type{HVByteVec}, hv::HV, p::Number, args...) where {HV<:AbstractHV}
+function perturbate!(::Type{HVByteVec}, hv::HV, p::Number, args...) where {HV <: AbstractHV}
     return perturbate!(hv, randbv(length(hv), p), args...)
 end
 
