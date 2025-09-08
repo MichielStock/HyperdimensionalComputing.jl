@@ -5,23 +5,23 @@ MONEY = BipolarHV()</code></pre><pre class="documenter-example-output"><code cla
   1
   1
   1
+ -1
+ -1
+  1
+  1
   1
  -1
   1
-  1
-  1
- -1
- -1
   ⋮
   1
  -1
  -1
  -1
+  1
+  1
  -1
- -1
- -1
- -1
- -1</code></pre><p>Holistic representation of countries</p><pre><code class="language-julia hljs">USA = BipolarHV()
+  1
+  1</code></pre><p>Holistic representation of countries</p><pre><code class="language-julia hljs">USA = BipolarHV()
 MEX = BipolarHV()
 
 WDC = BipolarHV()
@@ -32,43 +32,43 @@ PES = BipolarHV()
 
 USTATES = (COUNTRY * USA) + (CAPITAL * WDC) + (MONEY * DOL)
 MEXICO = (COUNTRY * MEX) + (CAPITAL * MXC) + (MONEY * PES)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10000-element BipolarHV:
-  1
-  1
  -1
-  1
-  1
-  1
- -1
-  1
- -1
- -1
-  ⋮
- -1
-  1
- -1
-  1
- -1
- -1
-  1
- -1
-  1</code></pre><pre><code class="language-julia hljs">USTATES ≈ MEXICO</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><p>If we now pair USTATES with MEXICO, we get a bundle that pairs USA with Mexico, Washington DC with Mexico City, and dollar with peso, plus noise:</p><pre><code class="language-julia hljs">F_UM = USTATES * MEXICO</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10000-element BipolarHV:
  -1
  -1
  -1
   1
- -1
   1
  -1
  -1
   1
   1
   ⋮
+  1
+  1
+  1
  -1
+  1
+  1
+ -1
+  1
+ -1</code></pre><pre><code class="language-julia hljs">USTATES ≈ MEXICO</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><p>If we now pair USTATES with MEXICO, we get a bundle that pairs USA with Mexico, Washington DC with Mexico City, and dollar with peso, plus noise:</p><pre><code class="language-julia hljs">F_UM = USTATES * MEXICO</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10000-element BipolarHV:
+  1
+  1
+  1
+ -1
+  1
+  1
   1
  -1
  -1
+  1
+  ⋮
  -1
  -1
+ -1
+ -1
+ -1
+  1
   1
   1
  -1</code></pre><p>What in Mexico corresponds to United States&#39; dollar:</p><pre><code class="language-julia hljs">DOL * F_UM ≈ PES</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><pre><code class="language-julia hljs">SWE = BipolarHV()
@@ -76,27 +76,27 @@ STO = BipolarHV()
 KRO = BipolarHV()
 
 SWEDEN = (COUNTRY * SWE) + (CAPITAL * STO) + (MONEY * KRO)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10000-element BipolarHV:
+  1
+  1
  -1
  -1
  -1
   1
+  1
  -1
-  1
-  1
-  1
-  1
+ -1
  -1
   ⋮
  -1
   1
  -1
-  1
+ -1
+ -1
   1
  -1
   1
-  1
- -1</code></pre><pre><code class="language-julia hljs">F_UM = USTATES * MEXICO
+  1</code></pre><pre><code class="language-julia hljs">F_UM = USTATES * MEXICO
 F_SU = SWEDEN * USTATES
 F_SM = SWEDEN * MEXICO
 
-F_SU * F_UM ≈ F_SM</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><pre><code class="language-julia hljs">USTATES * DOL ≈ MEXICO * PES</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><pre><code class="language-julia hljs">USTATES * DOL * MEXICO ≈ PES</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><pre><code class="language-julia hljs">USTATES * DOL * MEXICO ≈ KRO</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><pre><code class="language-julia hljs">USTATES * DOL * MEXICO ≈ DOL</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../introduction-to-hdc/">« Introduction to HDC</a><a class="docs-footer-nextpage" href="../../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Monday 8 September 2025 10:34">Monday 8 September 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+F_SU * F_UM ≈ F_SM</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><pre><code class="language-julia hljs">USTATES * DOL ≈ MEXICO * PES</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><pre><code class="language-julia hljs">USTATES * DOL * MEXICO ≈ PES</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><pre><code class="language-julia hljs">USTATES * DOL * MEXICO ≈ KRO</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><pre><code class="language-julia hljs">USTATES * DOL * MEXICO ≈ DOL</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../introduction-to-hdc/">« Introduction to HDC</a><a class="docs-footer-nextpage" href="../../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Monday 8 September 2025 15:10">Monday 8 September 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
