@@ -2,13 +2,13 @@
 learning.jl; Provides the basic functions to do learning.
 =#
 
-train(y, hdvs) = Dict(c => aggregate(hdvs[y .== c]) for c in unique(y))
+train(y, hdvs) = Dict(c => aggregate(hdvs[y.==c]) for c in unique(y))
 
 predict(v::AbstractHDV, centers) = maximum((similarity(v, xcᵢ), yᵢ) for (yᵢ, xcᵢ) in centers)[2]
 
 predict(hdvs::Vector{<:AbstractHDV}, centers) = [maximum((similarity(v, xcᵢ), yᵢ) for (yᵢ, xcᵢ) in centers)[2] for v in hdvs]
 
-function retrain!(centers, y, hdvs; niters = 10, verbose = true)
+function retrain!(centers, y, hdvs; niters=10, verbose=true)
     @assert length(y) == length(hdvs)
     n_obs = length(y)
     wrong = zeros(Bool, n_obs)
@@ -22,7 +22,7 @@ function retrain!(centers, y, hdvs; niters = 10, verbose = true)
         verbose && println(" found $n_errors classification errors")
         # aggregate all the mistaken vectors again in the centers
         for (yₖ, cₖ) in centers
-            aggregatewith!(cₖ, hdvs[(y .== yₖ) .& wrong])
+            aggregatewith!(cₖ, hdvs[(y.==yₖ).&wrong])
         end
         fill!(wrong, false)
     end

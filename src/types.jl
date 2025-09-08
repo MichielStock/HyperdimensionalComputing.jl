@@ -27,11 +27,11 @@ abstract type AbstractHV{T} <: AbstractVector{T} end
 Base.sum(hv::AbstractHV) = sum(hv.v)
 Base.size(hv::AbstractHV) = size(hv.v)
 Base.getindex(hv::AbstractHV, i) = hv.v[i]
-Base.similar(hv::T) where {T <: AbstractHV} = T(length(hv))
+Base.similar(hv::T) where {T<:AbstractHV} = T(length(hv))
 LinearAlgebra.norm(hv::AbstractHV) = norm(hv.v)
 LinearAlgebra.normalize!(hv::AbstractHV) = hv
 Base.hash(hv::AbstractHV) = hash(hv.v)
-Base.copy(hv::HV) where {HV <: AbstractHV} = HV(copy(hv.v))
+Base.copy(hv::HV) where {HV<:AbstractHV} = HV(copy(hv.v))
 
 
 get_vector(v::AbstractVector) = v
@@ -57,7 +57,7 @@ struct BipolarHV <: AbstractHV{Int}
     BipolarHV(v::BitVector) = new(v)
 end
 
-BipolarHV(n::Integer = 10_000) = BipolarHV(bitrand(n))
+BipolarHV(n::Integer=10_000) = BipolarHV(bitrand(n))
 BipolarHV(v::AbstractVector) = BipolarHV(v .> 0)
 
 Base.getindex(hv::BipolarHV, i) = hv.v[i] ? 1 : -1
@@ -76,7 +76,7 @@ struct TernaryHV <: AbstractHV{Int}
     v::Vector{Int}
 end
 
-TernaryHV(n::Int = 10_000) = TernaryHV(rand((-1, 1), n))
+TernaryHV(n::Int=10_000) = TernaryHV(rand((-1, 1), n))
 
 function LinearAlgebra.normalize!(hv::TernaryHV)
     clamp!(hv.v, -1, 1)
@@ -95,7 +95,7 @@ struct BinaryHV <: AbstractHV{Bool}
     v::BitVector
 end
 
-BinaryHV(n::Integer = 10_000) = BinaryHV(bitrand(n))
+BinaryHV(n::Integer=10_000) = BinaryHV(bitrand(n))
 BinaryHV(v::AbstractVector{Bool}) = BinaryHV(BitVector(v))
 
 # needed for aggregation
@@ -106,11 +106,13 @@ eldist(::Type{BinaryHV}) = Bernoulli(0.5)
 # `RealHV` contain real numbers, drawn from a distribution
 # --------
 
-struct RealHV{T <: Real} <: AbstractHV{T}
+struct RealHV{T<:Real} <: AbstractHV{T}
     v::Vector{T}
 end
 
-RealHV(n::Integer = 10_000, distr::Distribution = eldist(RealHV)) = RealHV(rand(distr, n))
+RealHV(n::Integer=10_000, distr::Distribution=eldist(RealHV)) = RealHV(rand(distr, n))
+
+RealHV(T::Type{<:Real}, n::Integer=10_000, distr::Distribution=eldist(RealHV)) = RealHV(T.(rand(distr, n)))
 
 
 Base.similar(hv::RealHV) = RealHV(length(hv), eldist(RealHV))
@@ -126,12 +128,12 @@ eldist(::Type{<:RealHV}) = Normal()
 # GradedHV are vectors in $[0, 1]^n$, allowing for graded relations.
 # ----------------
 
-struct GradedHV{T <: Real} <: AbstractHV{T}
+struct GradedHV{T<:Real} <: AbstractHV{T}
     v::Vector{T}
     #GradedHV(v::AbstractVector{T}) where {T<:Real} = new{T}(clamp!(v,0,1))
 end
 
-function GradedHV(n::Int = 10_000, distr = eldist(GradedHV))
+function GradedHV(n::Int=10_000, distr=eldist(GradedHV))
     @assert 0 ≤ minimum(distr) < maximum(distr) ≤ 1 "Provide `distr` with support in [0,1]"
     return GradedHV(rand(distr, n))
 end
@@ -155,12 +157,12 @@ end
 # ---------------
 
 
-struct GradedBipolarHV{T <: Real} <: AbstractHV{T}
+struct GradedBipolarHV{T<:Real} <: AbstractHV{T}
     v::Vector{T}
     #GradedBipolarHV(v::AbstractVector{T}) where {T<:Real} = new{T}(clamp!(v,-1,1))
 end
 
-function GradedBipolarHV(n::Int = 10_000, distr::Distribution = eldist(GradedBipolarHV))
+function GradedBipolarHV(n::Int=10_000, distr::Distribution=eldist(GradedBipolarHV))
     @assert -1 ≤ minimum(distr) < maximum(distr) ≤ 1 "Provide `distr` with support in [-1,1]"
     return GradedBipolarHV(rand(distr, n))
 end
