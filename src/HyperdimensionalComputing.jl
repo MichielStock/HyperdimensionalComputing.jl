@@ -11,6 +11,8 @@ export AbstractHV,
     GradedHV,
     TernaryHV
 
+include("representations.jl")
+
 include("operations.jl")
 export bundle,
     bind,
