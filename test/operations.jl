@@ -52,7 +52,7 @@ using LinearAlgebra, Random
             end
 
             # currently not yet a good way of evaluating these
-            HV <: Union{TernaryHV,GradedHV,GradedBipolarHV,RealHV} && continue
+            HV <: Union{TernaryHV, GradedHV, GradedBipolarHV, RealHV} && continue
 
             @testset "similarity $HV" begin
                 N = 10_000

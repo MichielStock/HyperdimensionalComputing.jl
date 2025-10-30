@@ -183,36 +183,36 @@ Aliases with `\`.
 """
 unbind(hv1::HV, hv2::HV) where {HV <: AbstractHV} = bind(hv1, hv2)
 
-unbind(hv1::RealHV, hv2::RealHV) where {HV<:AbstractHV} = RealHV(hv1.v ./ hv2.v)
-unbind(hv1::FHRR, hv2::FHRR) where {HV<:AbstractHV} = FHRR(hv1.v ./ hv2.v)
+unbind(hv1::RealHV, hv2::RealHV) where {HV <: AbstractHV} = RealHV(hv1.v ./ hv2.v)
+unbind(hv1::FHRR, hv2::FHRR) where {HV <: AbstractHV} = FHRR(hv1.v ./ hv2.v)
 
-Base.:/(hv1::HV, hv2::HV) where {HV<:AbstractHV} = unbind(hv1, hv2)
+Base.:/(hv1::HV, hv2::HV) where {HV <: AbstractHV} = unbind(hv1, hv2)
 
 
 # SHIFTING
 # --------
 
-shift!(hv::AbstractHV, k=1) = circshift!(hv.v, k)
+shift!(hv::AbstractHV, k = 1) = circshift!(hv.v, k)
 
-function shift(hv::AbstractHV, k=1)
+function shift(hv::AbstractHV, k = 1)
     r = similar(hv)
     r.v .= circshift(hv.v, k)
     return r
 end
 
-function shift!(hv::V, k=1) where {V<:Union{BinaryHV,BipolarHV}}
+function shift!(hv::V, k = 1) where {V <: Union{BinaryHV, BipolarHV}}
     v = similar(hv.v)  # empty bitvector
     hv.v .= circshift!(v, hv.v, k)
     return hv
 end
 
-function shift(hv::V, k=1) where {V<:Union{BinaryHV,BipolarHV}}
+function shift(hv::V, k = 1) where {V <: Union{BinaryHV, BipolarHV}}
     v = similar(hv.v)  # empty bitvector
     return V(circshift!(v, hv.v, k))
 end
 
-ρ(hv::AbstractHV, k=1) = shift(hv, k)
-ρ!(hv::AbstractHV, k=1) = shift!(hv, k)
+ρ(hv::AbstractHV, k = 1) = shift(hv, k)
+ρ!(hv::AbstractHV, k = 1) = shift!(hv, k)
 
 
 # COMPARISON
@@ -231,7 +231,7 @@ One can specify either:
 - `atol=N/100` number of matches more than due to chance needed for being assumed similar
 - `ptol=0.01` threshold for seeing that many matches due to chance
 """
-function Base.isapprox(u::T, v::T; atol=length(u) / 100, ptol=0.01) where {T<:Union{BinaryHV,BipolarHV}}
+function Base.isapprox(u::T, v::T; atol = length(u) / 100, ptol = 0.01) where {T <: Union{BinaryHV, BipolarHV}}
     @assert length(u) == length(v) "Vectors have to be of equal length"
     N = length(u)
     missmatches = sum(ui != vi for (ui, vi) in zip(u, v))
@@ -251,7 +251,7 @@ One can specify either:
 - `ptol=1e-10` threshold for seeing that many matches due to chance
 - `N_bootstap=200` number of samples for bootstrapping
 """
-function Base.isapprox(u::T, v::T; ptol=1.0e-10, N_bootstrap=500) where {T<:AbstractHV}
+function Base.isapprox(u::T, v::T; ptol = 1.0e-10, N_bootstrap = 500) where {T <: AbstractHV}
     @assert length(u) == length(v) "Vectors have to be of equal length"
     N = length(u)
     # bootstrap to find the zero distr
@@ -287,17 +287,17 @@ function randbv(n::Int, I)
 end
 
 
-function perturbate!(::Type{HVByteVec}, hv::HV, I, dist=eldist(hv)) where {HV<:AbstractHV}
+function perturbate!(::Type{HVByteVec}, hv::HV, I, dist = eldist(hv)) where {HV <: AbstractHV}
     hv.v[I] .= rand(dist, length(I))
     return hv
 end
 
-function perturbate!(::Type{HVByteVec}, hv::HV, M::BitVector, dist=eldist(hv)) where {HV<:AbstractHV}
+function perturbate!(::Type{HVByteVec}, hv::HV, M::BitVector, dist = eldist(hv)) where {HV <: AbstractHV}
     hv.v[M] .= rand(dist, sum(M))
     return hv
 end
 
-function perturbate!(::Type{HVByteVec}, hv::HV, p::Number, args...) where {HV<:AbstractHV}
+function perturbate!(::Type{HVByteVec}, hv::HV, p::Number, args...) where {HV <: AbstractHV}
     return perturbate!(hv, randbv(length(hv), p), args...)
 end
 
