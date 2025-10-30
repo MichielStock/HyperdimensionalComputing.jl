@@ -81,9 +81,9 @@ Alias for `similarity`. See `similarity` for the main documentation.
 
 nearest_neighbor(u::AbstractHV, collection; kwargs...) =
     maximum(
-        (similarity(u, xi; kwargs...), i, xi)
+    (similarity(u, xi; kwargs...), i, xi)
         for (i, xi) in enumerate(collection)
-    )
+)
 
 nearest_neighbor(u::AbstractHV, collection::Dict; kwargs...) =
     maximum((similarity(u, xi; kwargs...), k, xi) for (k, xi) in collection)
@@ -104,15 +104,15 @@ list of `(τ, i)`.
 function nearest_neighbor(u::AbstractHV, collection, k::Int; kwargs...)
     sims = [
         (similarity(u, xi; kwargs...), i)
-        for (i, xi) in enumerate(collection)
+            for (i, xi) in enumerate(collection)
     ]
-    return partialsort!(sims, 1:k, rev=true)
+    return partialsort!(sims, 1:k, rev = true)
 end
 
 function nearest_neighbor(u::AbstractHV, collection::Dict, k::Int; kwargs...)
     sims = [
         (similarity(u, xi; kwargs...), i)
-        for (i, xi) in collection
+            for (i, xi) in collection
     ]
-    return partialsort!(sims, 1:k, rev=true)
+    return partialsort!(sims, 1:k, rev = true)
 end

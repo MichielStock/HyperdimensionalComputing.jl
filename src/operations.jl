@@ -58,7 +58,7 @@ end
 
 # computes `r[i] = f(x[i], y[i+offset])`
 # assumes postive offset (for now)
-@inline function offsetcombine!(r, f, x, y, offset=0)
+@inline function offsetcombine!(r, f, x, y, offset = 0)
     @assert length(r) == length(x) == length(y)
     n = length(r)
     if offset == 0
@@ -73,7 +73,7 @@ end
     return r
 end
 
-@inline function offsetcombine(f, x::V, y::V, offset=0) where {V<:AbstractVecOrMat}
+@inline function offsetcombine(f, x::V, y::V, offset = 0) where {V <: AbstractVecOrMat}
     @assert length(x) == length(y)
     r = similar(x)
     n = length(r)
@@ -93,7 +93,7 @@ end
 # ------
 
 # binary and bipolar: use majority
-function bundle(hvr::Union{BinaryHV,BipolarHV}, hdvs, r)
+function bundle(hvr::Union{BinaryHV, BipolarHV}, hdvs, r)
     m = length(hdvs)
     for hv in hdvs
         r .+= hv.v
@@ -108,9 +108,9 @@ end
 
 # ternary: just add them, no normalization by default
 function bundle(
-    ::TernaryHV, hdvs, r;
-    normalize=false
-)
+        ::TernaryHV, hdvs, r;
+        normalize = false
+    )
     for hv in hdvs
         r .+= hv.v
     end
@@ -157,11 +157,11 @@ function bundle(hdvs; kwargs...)
     return bundle(hv, hdvs, r, kwargs...)
 end
 
-Base.:+(hv1::HV, hv2::HV) where {HV<:AbstractHV} = bundle((hv1, hv2))
+Base.:+(hv1::HV, hv2::HV) where {HV <: AbstractHV} = bundle((hv1, hv2))
 
 # BINDING
 # -------
-Base.bind(hv1::HV, hv2::HV) where {HV<:AbstractHV} = HV(hv1.v .* hv2.v)  # default
+Base.bind(hv1::HV, hv2::HV) where {HV <: AbstractHV} = HV(hv1.v .* hv2.v)  # default
 Base.bind(hv1::BinaryHV, hv2::BinaryHV) = BinaryHV(hv1.v .⊻ hv2.v)
 Base.bind(hv1::BipolarHV, hv2::BipolarHV) = BipolarHV(hv1.v .⊻ hv2.v)
 Base.bind(hv1::TernaryHV, hv2::TernaryHV) = TernaryHV(hv1.v .* hv2.v)
@@ -169,8 +169,8 @@ Base.bind(hv1::RealHV, hv2::RealHV) = RealHV(hv1.v .* hv2.v)
 Base.bind(hv1::GradedHV, hv2::GradedHV) = GradedHV(fuzzy_xor.(hv1.v, hv2.v))
 Base.bind(hv1::GradedBipolarHV, hv2::GradedBipolarHV) = GradedBipolarHV(fuzzy_xor_bipol.(hv1.v, hv2.v))
 Base.bind(hv1::FHRR, hv2::FHRR) = FHRR(hv1.v .* hv2.v)
-Base.:*(hv1::HV, hv2::HV) where {HV<:AbstractHV} = bind(hv1, hv2)
-Base.bind(hvs::AbstractVector{HV}) where {HV<:AbstractHV} = prod(hvs)
+Base.:*(hv1::HV, hv2::HV) where {HV <: AbstractHV} = bind(hv1, hv2)
+Base.bind(hvs::AbstractVector{HV}) where {HV <: AbstractHV} = prod(hvs)
 
 
 """
@@ -181,7 +181,7 @@ idempotent, i.e., `u * v * v == u`.
 
 Aliases with `\`.
 """
-unbind(hv1::HV, hv2::HV) where {HV<:AbstractHV} = bind(hv1, hv2)
+unbind(hv1::HV, hv2::HV) where {HV <: AbstractHV} = bind(hv1, hv2)
 
 unbind(hv1::RealHV, hv2::RealHV) where {HV<:AbstractHV} = RealHV(hv1.v ./ hv2.v)
 unbind(hv1::FHRR, hv2::FHRR) where {HV<:AbstractHV} = FHRR(hv1.v ./ hv2.v)
