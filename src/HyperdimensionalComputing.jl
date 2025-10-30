@@ -9,13 +9,15 @@ export AbstractHV,
     GradedBipolarHV,
     RealHV,
     GradedHV,
-    TernaryHV
+    TernaryHV,
+    FHRR
 
 include("representations.jl")
 
 include("operations.jl")
 export bundle,
     bind,
+    unbind,
     shift!,
     shift,
     ρ,
