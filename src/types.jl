@@ -18,12 +18,10 @@ Every hypervector HV has the following basic functionality
 TODO: 
 - [ ] SparseHV
 - [ ] support for different types
-- [ ] complex HDC
 =#
 
 abstract type AbstractHV{T} <: AbstractVector{T} end
 
-#Base.collect(hv::AbstractHV) = hv.v
 Base.sum(hv::AbstractHV) = sum(hv.v)
 Base.size(hv::AbstractHV) = size(hv.v)
 Base.getindex(hv::AbstractHV, i) = hv.v[i]
@@ -105,7 +103,6 @@ struct RealHV{T<:Real} <: AbstractHV{T}
 end
 
 RealHV(n::Integer=10_000, distr::Distribution=eldist(RealHV)) = RealHV(rand(distr, n))
-
 
 Base.similar(hv::RealHV) = RealHV(length(hv), eldist(RealHV))
 

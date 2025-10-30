@@ -82,6 +82,8 @@ using LinearAlgebra, Random
 
         @test similarity(hv1, hv2) < 0.5
         @test similarity(hv2, hv2) ≈ 1
+
+        @test norm(hv1^3) ≈ sqrt(n)
     end
 
 end
