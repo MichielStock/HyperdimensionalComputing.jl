@@ -1,12 +1,12 @@
 @testset "encoding" begin
     hvs = BinaryHV.(
         [
-            [1, 0, 0, 0, 0],
-            [1, 1, 0, 0, 0],
-            [1, 1, 1, 0, 0],
-            [1, 1, 1, 1, 0],
-            [1, 1, 1, 1, 1],
-        ]
+        [1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0],
+        [1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1],
+    ]
     )
 
     @testset "multiset" begin
@@ -46,7 +46,7 @@
         s = [1, 3, 4, 2, 5]
         t = [3, 4, 2, 1, 4]
         @test graph(hvs[s], hvs[t]) == Bool.([0, 0, 0, 0, 0])
-        @test graph(hvs[s], hvs[t]; directed = true) == Bool.([1, 0, 0, 1, 0])
+        @test graph(hvs[s], hvs[t]; directed=true) == Bool.([1, 0, 0, 1, 0])
         @test_throws AssertionError graph(hvs[s], hvs[[1, 2, 3]])
     end
 
@@ -63,4 +63,25 @@
         x = decoder(hv)
         @test 1 ≤ x ≤ 2
     end
+
+    @testset "FHRR numbers" begin
+
+        v = FHRR()
+
+        numvals = 0:0.1:10
+
+        encoder, decoder = convertlevel(v, numvals)
+
+        x, y, z = 2, 5, 10
+
+        hx, hy, hz = encoder.((x, y, z))
+
+        @test hx isa FHRR
+        @test similarity(hx, hy) > similarity(hx, hz)
+
+        @test decoder(hx) < decoder(hy) < decoder(hz)
+    end
 end
+
+
+
