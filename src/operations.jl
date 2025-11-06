@@ -89,8 +89,8 @@ end
     return r
 end
 
-# AGGREGATION
-# -----------
+# BUNDLE
+# ------
 
 # binary and bipolar: use majority
 function bundle(hvr::Union{BinaryHV, BipolarHV}, hdvs, r)
@@ -143,6 +143,14 @@ function bundle(::GradedBipolarHV, hdvs, r)
     return GradedBipolarHV(r)
 end
 
+function bundle(::FHRR, hdvs, r)
+    for hv in hdvs
+        r .+= hv.v
+    end
+    r ./= abs.(r)
+    return FHRR(r)
+end
+
 function bundle(hdvs; kwargs...)
     hv = first(hdvs)
     r = empty_vector(hv)
@@ -153,15 +161,32 @@ Base.:+(hv1::HV, hv2::HV) where {HV <: AbstractHV} = bundle((hv1, hv2))
 
 # BINDING
 # -------
-
+Base.bind(hv1::HV, hv2::HV) where {HV <: AbstractHV} = HV(hv1.v .* hv2.v)  # default
 Base.bind(hv1::BinaryHV, hv2::BinaryHV) = BinaryHV(hv1.v .⊻ hv2.v)
 Base.bind(hv1::BipolarHV, hv2::BipolarHV) = BipolarHV(hv1.v .⊻ hv2.v)
 Base.bind(hv1::TernaryHV, hv2::TernaryHV) = TernaryHV(hv1.v .* hv2.v)
 Base.bind(hv1::RealHV, hv2::RealHV) = RealHV(hv1.v .* hv2.v)
 Base.bind(hv1::GradedHV, hv2::GradedHV) = GradedHV(fuzzy_xor.(hv1.v, hv2.v))
 Base.bind(hv1::GradedBipolarHV, hv2::GradedBipolarHV) = GradedBipolarHV(fuzzy_xor_bipol.(hv1.v, hv2.v))
+Base.bind(hv1::FHRR, hv2::FHRR) = FHRR(hv1.v .* hv2.v)
 Base.:*(hv1::HV, hv2::HV) where {HV <: AbstractHV} = bind(hv1, hv2)
 Base.bind(hvs::AbstractVector{HV}) where {HV <: AbstractHV} = prod(hvs)
+
+
+"""
+    unbind(hv1::HV, hv2::HV)
+
+Unbinds `hv2` from `hv1`. For many types of hypervectors, the binding operator is
+idempotent, i.e., `u * v * v == u`.
+
+Aliases with `\`.
+"""
+unbind(hv1::HV, hv2::HV) where {HV <: AbstractHV} = bind(hv1, hv2)
+
+unbind(hv1::RealHV, hv2::RealHV) where {HV <: AbstractHV} = RealHV(hv1.v ./ hv2.v)
+unbind(hv1::FHRR, hv2::FHRR) where {HV <: AbstractHV} = FHRR(hv1.v ./ hv2.v)
+
+Base.:/(hv1::HV, hv2::HV) where {HV <: AbstractHV} = unbind(hv1, hv2)
 
 
 # SHIFTING
@@ -286,3 +311,8 @@ end
 perturbate!(hv, args...) = perturbate!(vectype(hv), hv, args...)
 
 perturbate(hv::AbstractHV, args...; kwargs...) = perturbate!(copy(hv), args...; kwargs...)
+
+# OTHER
+# -----
+
+Base.:^(hv::FHRR, x::Number) = FHRR(hv.v .^ x)

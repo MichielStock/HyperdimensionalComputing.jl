@@ -20,6 +20,7 @@ similarity(u::GradedBipolarHV, v::GradedBipolarHV) = sim_cos(u, v)
 similarity(u::RealHV, v::RealHV) = sim_cos(u, v)
 similarity(u::BinaryHV, v::BinaryHV) = sim_jacc(u, v)
 similarity(u::GradedHV, v::GradedHV) = sim_jacc(u, v)
+similarity(u::FHRR, v::FHRR) = real(dot(u.v, v.v)) / length(u)
 
 """
     similarity(u::AbstractVector, v::AbstractVector; method::Symbol)

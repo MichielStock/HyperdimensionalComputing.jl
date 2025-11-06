@@ -97,4 +97,15 @@ using Distributions, LinearAlgebra
         @test norm(hdv) ≈ norm(hdv.v)
         normalize!(hdv)
     end
+
+    @testset "FHRR" begin
+        hdv = FHRR(n)
+        @test length(hdv) == n
+        @test eltype(hdv) <: Complex
+        @test hdv[2] isa Complex
+
+        @test sum(hdv) ≈ sum(hdv.v)
+        @test norm(hdv) ≈ norm(hdv.v)
+
+    end
 end

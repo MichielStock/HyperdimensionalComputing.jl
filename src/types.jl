@@ -18,12 +18,10 @@ Every hypervector HV has the following basic functionality
 TODO: 
 - [ ] SparseHV
 - [ ] support for different types
-- [ ] complex HDC
 =#
 
 abstract type AbstractHV{T} <: AbstractVector{T} end
 
-#Base.collect(hv::AbstractHV) = hv.v
 Base.sum(hv::AbstractHV) = sum(hv.v)
 Base.size(hv::AbstractHV) = size(hv.v)
 Base.getindex(hv::AbstractHV, i) = hv.v[i]
@@ -106,7 +104,6 @@ end
 
 RealHV(n::Integer = 10_000, distr::Distribution = eldist(RealHV)) = RealHV(rand(distr, n))
 
-
 Base.similar(hv::RealHV) = RealHV(length(hv), eldist(RealHV))
 
 function normalize!(hv::RealHV)
@@ -167,6 +164,30 @@ eldist(::Type{<:GradedBipolarHV}) = 2eldist(GradedHV) - 1
 Base.similar(hv::GradedBipolarHV) = GradedBipolarHV(length(hv))
 LinearAlgebra.normalize!(hv::GradedBipolarHV) = clamp!(hv.v, -1, 1)
 
+# Fourier Holographically Reduced Represenetations
+# ------------------------------------------------
+
+struct FHRR{T <: Complex} <: AbstractHV{T}
+    v::Vector{T}
+end
+
+#Base.eltype(::FHRR{T}) where {T} = Complex{T}
+
+FHRR(n::Int = 10_000) = FHRR(exp.(2π * im .* rand(n)))
+FHRR(T::Type, n::Int = 10_000) = FHRR(exp.(2π * im .* rand(T, n)))
+
+Base.similar(hv::FHRR{<:Complex{R}}) where {R} = FHRR(exp.(2π * im .* rand(R, length(hv))))
+
+"""
+    LinearAlgebra.normalize!(hv::FHRR)
+
+A Fourier Holographically Reduced Represenetation is normalized by
+setting the norm of each complex element to 1.
+"""
+function LinearAlgebra.normalize!(hv::FHRR)
+    hv.v ./= abs.(hv.v)
+    return hv
+end
 
 # TRAITS
 # ------

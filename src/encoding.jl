@@ -493,25 +493,25 @@ end
 
 """
 	level(v::HV, n::Int) where {HV <: AbstractHV}
-	level(HV::Type{<:AbstractHV}, n::Int; dims::Int = 10_000)
+	level(HV::Type{<:AbstractHV}, m::Int; n::Int = 10_000)
 
 Creates a set of level correlated hypervectors, where the first and last hypervectors are quasi-orthogonal.
 
 # Arguments
 - `v::HV`: Base hypervector
-- `n::Int`: Number of levels (alternatively, provide a vector to be encoded)
+- `m::Int`: Number of levels (alternatively, provide a vector to be encoded)
 """
-function level(v::HV, n::Int) where {HV <: AbstractHV}
+function level(v::HV, m::Int) where {HV <: AbstractHV}
     hvs = [v]
-    p = 2 / n
-    while length(hvs) < n
+    p = 2 / m
+    while length(hvs) < m
         u = last(hvs)
         push!(hvs, perturbate(u, p))
     end
     return hvs
 end
 
-level(HV::Type{<:AbstractHV}, n::Int; dims::Int = 10_000) = level(HV(dims), n)
+level(HV::Type{<:AbstractHV}, m::Int; n::Int = 10_000) = level(HV(n), m)
 
 level(HVv, vals::AbstractVector) = level(HVv, length(vals))
 level(HVv, vals::UnitRange) = level(HVv, length(vals))
@@ -591,12 +591,37 @@ end
 
 decodelevel(hvlevels::AbstractVector{<:AbstractHV}, a::Number, b::Number) = decodelevel(hvlevels, range(a, b, length(hvlevels)))
 
-decodelevel(HV, numvalues; testbound = false) = decodelevel(level(HV, length(numvalues)), numvalues)
+decodelevel(HV, numvalues; testbound = false) = decodelevel(level(HV, length(numvalues)), numvalues; testbound)
 
 """
     convertlevel(hvlevels, numvals..., kwargs...)
+    convertlevel(HV::AbstractHV, numvals..., kwargs...)
 
 Creates the `encoder` and `decoder` for a level incoding in one step. See `encodelevel`
 and `decodelevel` for their respective documentations.
 """
 convertlevel(hvlevels, numvals...; kwargs...) = encodelevel(hvlevels, numvals...; kwargs...), decodelevel(hvlevels, numvals..., kwargs...)
+
+convertlevel(hv::AbstractHV, numvals...; kwargs...) = encodelevel(hv, numvals...; kwargs...), decodelevel(hv, numvals..., kwargs...)
+
+
+# levels using FHRR
+
+function level(v::FHRR, m::Int; β = 1 / m)
+    return [v^(x * β) for x in 1:m]
+end
+
+function level(v::FHRR, vals::Union{AbstractVector{<:Number}, UnitRange}; β = 1 / (maximum(vals) - minimum(vals)))
+    return [v^(x * β) for x in vals]
+end
+
+function encodelevel(v::FHRR, vals = (0, 1); β = 1 / (maximum(vals) - minimum(vals)))
+    return x -> v^(β * x)
+end
+
+function decodelevel(v::FHRR, vals = (0, 1); β = 1 / (maximum(vals) - minimum(vals)))
+    return u -> @.(real(log(u.v) / log(v.v) / β)) |> mean
+end
+
+
+convertlevel(v::FHRR, vals = (0, 1); kwargs...) = encodelevel(v, vals; kwargs...), decodelevel(v, vals; kwargs...)

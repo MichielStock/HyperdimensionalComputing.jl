@@ -63,4 +63,22 @@
         x = decoder(hv)
         @test 1 ≤ x ≤ 2
     end
+
+    @testset "FHRR numbers" begin
+
+        v = FHRR()
+
+        numvals = 0:0.1:10
+
+        encoder, decoder = convertlevel(v, numvals)
+
+        x, y, z = 2, 5, 10
+
+        hx, hy, hz = encoder.((x, y, z))
+
+        @test hx isa FHRR
+        @test similarity(hx, hy) > similarity(hx, hz)
+
+        @test decoder(hx) < decoder(hy) < decoder(hz)
+    end
 end
