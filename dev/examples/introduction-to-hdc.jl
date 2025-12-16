@@ -24,7 +24,7 @@ BipolarHV()
 # value in `HyperdimensionalComputing.jl`, but one can can create a hypervector of any given
 # dimensionality by providing the size of this as an argument:
 
-BipolarHV(; dims = 8)
+BipolarHV(; D = 8)
 
 # Alternatively, one can create a hypervector directly from a `Vector{T}` where `{T}` is an
 # appropiate data type, e.g. integers for BipolarHV:
@@ -38,9 +38,9 @@ BipolarHV(:foo)
 
 # Let's create 3 bipolar hypervector to use for the tutorial:
 
-h₁ = BipolarHV(; dims = 8)
-h₂ = BipolarHV(; dims = 8)
-h₃ = BipolarHV(; dims = 8);
+h₁ = BipolarHV(; D = 8)
+h₂ = BipolarHV(; D = 8)
+h₃ = BipolarHV(; D = 8);
 
 
 # The package has different hypervector types, such as `BipolarHV`, `TernaryHV`, `RealHV`,
