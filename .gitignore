@@ -5,3 +5,9 @@ data/
 literature/
 Manifest.toml
 docs/build/
+
+# Literate output: regenerated from docs/src/examples/*.jl on every docs build
+docs/src/examples/*.md
+
+# local dev config
+.claude/

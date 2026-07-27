@@ -26,7 +26,9 @@ test/
   types.jl, operations.jl, encoding.jl, inference.jl, representations.jl
   ext_display.jl                # rich-display tests, run in a separate process (extension loading is irreversible)
 docs/
-  src/examples/                 # Literate.jl tutorials (intro-to-hdc, dollar-of-mexico)
+  src/examples/                 # Literate.jl tutorials (intro-to-hdc, encoding-data,
+                                #   colours, dollar-of-mexico, iris); *.md is Literate
+                                #   output, gitignored and regenerated on every build
 ```
 
 ## Supported vector types (all subtypes of `AbstractHV{T} <: AbstractVector{T}`)
@@ -52,7 +54,7 @@ Constructor convention (settled; each form has exactly one meaning, documented o
 
 `encode` is the canonical interface: `encode(HV, x; D)` is the deterministic token path (hash → seed), `encode(HV, x, strategy)` dispatches on `AbstractEncoding` strategies: `KMer(k)` (windows as atomic hashed tokens — resolves issue #53), `NGram(n)` (symbol-level shift-binding via `ngrams`), `Sequence()` (bundlesequence), `BagOfSymbols()` (multiset). New strategies = one struct + one `encode` method.
 
-Stateful encoders live in the `AbstractEncoder{HV}` hierarchy (encode.jl): instances hold hypervector state built once at construction and slot in as the first argument of `encode`, with `decode` as the inverse. Two members: `LevelEncoder` encodes scalars against a shared level set (see below); `RandomProjection` encodes fixed-length real feature vectors (RGB triples, embeddings) through a shared `D × d` projection matrix (**standardize features when they are on incommensurable scales — not as a reflex**: measured on iris, raw features beat standardized ones 0.98 vs 0.83, because there the largest-spread features are also the most discriminative; see the iris tutorial) (`z = R·x`, then a per-type nonlinearity: sign-like for binary/bipolar/ternary with a scalar-or-vector threshold `θ`, `β`-scaled identity/logistic/tanh for real/graded, `exp(im·β·z)` for FHRR). Matrix flavours: `:gaussian` (default), `:bipolar`, `:sparse_ternary`. Constructors: `RandomProjection(HV, d; D, matrix, θ, β, seed, rng)`, `RandomProjection(HV, R::AbstractMatrix; θ, β)` (supplied matrix), and a data-driven ternary form `RandomProjection(TernaryHV, X; target_sparsity)` that solves θ from data at construction (immutable — construction-from-data, not fitting; `rethreshold(rp, θ)` returns a new encoder sharing `R`). RP's `decode(rp, hv, references)` is nearest-neighbour clean-up only (no analytic inverse exists — the nonlinearity is lossy); it errors without a reference set. FHRR + `:gaussian` is exactly random Fourier features: similarity approximates a Gaussian kernel with bandwidth `β`. Both encoders' FHRR paths route through the single internal `phase_encode(z, β)` helper — never duplicate it.
+Stateful encoders live in the `AbstractEncoder{HV}` hierarchy (encode.jl): instances hold hypervector state built once at construction and slot in as the first argument of `encode`, with `decode` as the inverse. Two members: `LevelEncoder` encodes scalars against a shared level set (see below); `RandomProjection` encodes fixed-length real feature vectors (RGB triples, embeddings) through a shared `D × d` projection matrix: `z = R·x`, then a per-type nonlinearity (sign-like for binary/bipolar/ternary with a scalar-or-vector threshold `θ`, `β`-scaled identity/logistic/tanh for real/graded, `exp(im·β·z)` for FHRR). **Standardize features when they are on incommensurable scales — not as a reflex**: measured on iris, raw features beat standardized ones 0.98 vs 0.83, because there the largest-spread features are also the most discriminative (see the iris tutorial). Matrix flavours: `:gaussian` (default), `:bipolar`, `:sparse_ternary`. Constructors: `RandomProjection(HV, d; D, matrix, θ, β, seed, rng)`, `RandomProjection(HV, R::AbstractMatrix; θ, β)` (supplied matrix), and a data-driven ternary form `RandomProjection(TernaryHV, X; target_sparsity)` that solves θ from data at construction (immutable — construction-from-data, not fitting; `rethreshold(rp, θ)` returns a new encoder sharing `R`). RP's `decode(rp, hv, references)` is nearest-neighbour clean-up only (no analytic inverse exists — the nonlinearity is lossy); it errors without a reference set. FHRR + `:gaussian` is exactly random Fourier features: similarity approximates a Gaussian kernel with bandwidth `β`. Both encoders' FHRR paths route through the single internal `phase_encode(z, β)` helper — never duplicate it.
 
 Scalar `getindex` returns the element type `T`; non-scalar indexing returns a plain `Vector` of values, never a hypervector. Hypervectors are immutable (no `setindex!`).
 
@@ -60,13 +62,15 @@ Scalar `getindex` returns the element type `T`; non-scalar indexing returns a pl
 
 | Operation | Function | Operator | Effect |
 |-----------|----------|----------|--------|
-| Bundle | `bundle(hvs)` | `+` | Superposition; result similar to all inputs |
+| Bundle | `bundle(hvs)` | `+`, `sum` | Superposition; result similar to all inputs |
 | Bind | `bind(hv1, hv2)` | `*` | Association; result dissimilar to inputs |
 | Unbind | `unbind(hv1, hv2)` | `/` | Inverse of bind (throws for `RealHV`: real MAP binding is not exactly invertible) |
 | Shift | `shift(hv, k)` / `ρ(hv, k)` | — | Circular shift by k positions |
 | Perturbate | `perturbate(hv, n_or_p)` | — | Flip n positions or fraction p |
 
 In-place variants: `shift!`, `ρ!`, `perturbate!`.
+
+**Bundling is m-way, not pairwise.** The rule depends on how many inputs there are, so bundling is *not* associative for BinaryHV/BipolarHV/RealHV/FHRR. `bundle(hvs)`, `sum(hvs)` and chained `x + y + z` (Julia parses a `+` chain as one variadic call) all reach `bundle` with the whole collection and are equivalent; `(x + y) + z`, `reduce(+, hvs)` and `foldl(+, hvs)` bundle a bundle, which biases the result towards the last inputs and destroys the property that a bundle is equally similar to each part.
 
 ## Encoding strategies (compose primitives into structured representations)
 
@@ -82,7 +86,9 @@ Numeric values are encoded with `LevelEncoder` (encode.jl), which replaced the o
 
 ## Similarity and inference
 
-- `similarity(u, v)` / `δ(u, v)` — type-dispatched similarity (cosine for bipolar/real, Jaccard for binary/graded, complex dot for FHRR)
+- `similarity(u, v)` / `δ(u, v)` — type-dispatched similarity (cosine for bipolar/ternary/real/graded-bipolar/FHRR, Jaccard for binary/graded)
+- `similaritymetric(HV)` — which metric a type uses (`:cosine` / `:jaccard`)
+- `chancesimilarity(HV)` — what an *unrelated* pair scores: `0.0` under cosine, `1/3` under Jaccard. Needed to interpret any similarity number; assumes the type's default `distr`
 - `nearest_neighbor(u, collection)` — find closest match
 - `nearest_neighbor(u, collection, k)` — k-nearest neighbors
 
@@ -158,7 +164,7 @@ julia --project -e 'using Pkg; Pkg.test()'
 - [x] ~~`level`: docstring is minimal; does not explain the perturbation-based correlation mechanism~~ (obsolete: the family was replaced by `LevelEncoder`, whose docstring covers both mechanisms)
 - [ ] `three_pi` and `fuzzy_xor` helper functions: no docstrings
 - [ ] Internal functions (`aggfun`, `bindfun`, `neutralbind`, `noisy_and`, `elementreduce!`, `offsetcombine`, `empty_vector`, `eldist`, `vectype`): none documented
-- [ ] `docs/make.jl`: Contents block references `examples.md` but actual pages are in `examples/` subdirectory
+- [x] ~~`docs/make.jl`: Contents block references `examples.md`~~ (index.md rewritten as a real landing page)
 - [ ] No docstring for `^` on FHRR — exponentiation is an important FHRR feature
 - [ ] No developer docs on how to add a new HV type (what methods to implement, traits, etc.)
 

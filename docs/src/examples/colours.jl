@@ -147,9 +147,9 @@ decodecolour(memory * encode(BipolarHV, :water))
 noisy = bundle(
     [
         bind(
-            encode(BipolarHV, label),
-            bundle([encodecolour(c), encodecolour(RGB(rand(), rand(), rand())), encodecolour(RGB(rand(), rand(), rand()))])
-        )
+                encode(BipolarHV, label),
+                bundle([encodecolour(c), encodecolour(RGB(rand(), rand(), rand())), encodecolour(RGB(rand(), rand(), rand()))])
+            )
             for (label, colours) in categories for c in colours
     ]
 )
@@ -177,11 +177,14 @@ similarity(encode(rp_bipolar, col2vec(teal)), encode(rp_bipolar, col2vec(sky)))
 rp_shifted = rethreshold(rp, 0.5)
 similarity(encode(rp_shifted, col2vec(teal)), encode(rp_shifted, col2vec(sky)))
 
-# !!! tip "Standardise your features"
-#     Colours are already on a common `[0, 1]` scale. Real feature vectors usually are not, and
-#     a projection is dominated by whichever feature has the largest spread. Standardise
-#     (zero mean, unit variance) before encoding, or the geometry you get will not be the
-#     geometry you meant.
+# !!! tip "Mind your feature scales"
+#     Colours are already on a common `[0, 1]` scale. Real feature vectors often are not, and a
+#     projection is dominated by whichever feature has the largest spread -- so features measured
+#     in grams and kilometres need to be put on a common footing first.
+#
+#     Standardising is not an automatic win, though. When features already share a unit *and*
+#     their spread carries signal, equalising them throws information away; the *Iris dataset*
+#     tutorial measures a case where standardising makes the classifier markedly worse.
 #
 # ## The kernel connection
 #
@@ -203,9 +206,11 @@ rp_fhrr = RandomProjection(FHRR, 3; β = β, seed = 7, D = 20_000)
 comparison = map(1:6) do _
     x, y = rand(3), rand(3)
     d = norm(x - y)
-    (distance = round(d, digits = 3),
+    (
+        distance = round(d, digits = 3),
         hdc = round(similarity(encode(rp_fhrr, x), encode(rp_fhrr, y)), digits = 3),
-        kernel = round(exp(-β^2 * d^2 / 2), digits = 3))
+        kernel = round(exp(-β^2 * d^2 / 2), digits = 3),
+    )
 end
 
 # The two columns agree to about three decimals:

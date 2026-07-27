@@ -139,8 +139,10 @@ profiles = Dict(lang => encode(BinaryHV, clean(text), KMer(3)) for (lang, text) 
 # rank every pair of languages by the similarity of their profiles:
 
 ranked = sort(
-    [(similarity(profiles[a], profiles[b]), a, b)
-        for a in keys(texts) for b in keys(texts) if a < b];
+    [
+        (similarity(profiles[a], profiles[b]), a, b)
+            for a in keys(texts) for b in keys(texts) if a < b
+    ];
     rev = true,
 )
 first(ranked, 5)
@@ -197,8 +199,8 @@ rp = RandomProjection(BipolarHV, 3; seed = 1)
 # Colours are a nice low-dimensional example: RGB triples where we already know which ones
 # *should* be similar.
 
-teal = encode(rp, [0.09, 0.57, 0.60])
-sky = encode(rp, [0.02, 0.65, 0.90])
+teal = encode(rp, [0.09, 0.57, 0.6])
+sky = encode(rp, [0.02, 0.65, 0.9])
 orange = encode(rp, [0.99, 0.39, 0.04])
 
 similarity(teal, sky)     # both blue-green: similar

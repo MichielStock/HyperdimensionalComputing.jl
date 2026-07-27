@@ -48,6 +48,31 @@ The package now has an explicit layer taxonomy: **primitives** (`operations.jl`)
 
 ---
 
+## 0b. Documentation refresh (2026-07-27)
+
+Branch `docs-encoders-refresh` = `38-integration` + the encoders work, with the
+tutorials brought up to the current API and the encoder layer documented:
+
+- `iris.jl` ported to `LevelEncoder` (it used all four removed level functions, and
+  defined local `encode`/`decode` helpers colliding with the new exports).
+- `api.md` restructured into Combinators / Encoders; the stateful encoders reach the
+  API page for the first time.
+- New tutorials: **Encoding data** (token path, KMer vs NGram, language recognition
+  from character k-mers — the issue #53 payoff) and **Colours** (RandomProjection end
+  to end, incl. decode-as-clean-up, the tuning knobs, and FHRR-as-random-Fourier-
+  features verified numerically in the page).
+- Iris gained a second act encoding the same data with one `RandomProjection`.
+- Landing page rewritten; developer guide added to the nav; `Remotes.GitHub` silences
+  the navbar warning; generated `docs/src/examples/*.md` untracked and gitignored
+  (they are Literate output, regenerated every build — they were a third of the diff).
+- New API from review questions: `sum(hvs)` now bundles the whole collection, and
+  `similaritymetric` / `chancesimilarity` make similarity scores interpretable.
+
+Still unwritten from the plan: the amino-acids page and a "Why hyperdimensional?"
+page (low- vs high-dimensional similarity histograms). Neither blocks anything.
+
+---
+
 ## 1. Confirmed bugs (release blockers)
 
 ### 1.1 UnicodePlots extension fails to precompile — FIXED (2026-07-14)
