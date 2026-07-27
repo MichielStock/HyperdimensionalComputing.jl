@@ -27,7 +27,7 @@ nothing # hide
 # The projection matrix is drawn once, at construction, and stored inside the encoder. That is
 # what makes separately encoded colours comparable -- they all pass through the same `R`.
 
-rp = RandomProjection(BipolarHV, 3; seed = 1)
+rp = RandomProjection(BipolarHV, 3; seed=1)
 
 # `Colors.RGB` is a struct, so we unpack it into a plain 3-vector before encoding:
 
@@ -63,7 +63,7 @@ similarity(encodecolour(teal), encodecolour(orange))    # opposite ends
 # ## Blending by bundling
 #
 # Because the encoding is geometric, the HDC primitives now do geometric things. Bundling two
-# colour hypervectors gives something *between* them -- a blend:
+# colour hypervectors gives something *between* them, i.e., a blend:
 
 v_blend = bundle([encodecolour(teal), encodecolour(orange)])
 similarity(v_blend, encodecolour(teal)), similarity(v_blend, encodecolour(orange))
@@ -73,10 +73,10 @@ similarity(v_blend, encodecolour(teal)), similarity(v_blend, encodecolour(orange
 #
 # ## Decoding: clean-up, not inversion
 #
-# Here is an important limitation, and the package is deliberate about it. The nonlinearity in
+# Here is an important limitation: the nonlinearity in
 # ``f(R\mathbf{x})`` throws away magnitudes: `sign` maps a whole half-space to the same bit. A
-# random projection therefore has **no analytic inverse**. [`decode`](@ref) does not pretend
-# otherwise -- it performs *clean-up*, searching a set of reference hypervectors for the closest
+# random projection therefore has **no analytic inverse**. [`decode`](@ref) 
+# performs *clean-up*, searching a set of reference hypervectors for the closest
 # match. Calling it without references is an error.
 #
 # So we build a codebook: a few thousand random colours, encoded once.
@@ -88,19 +88,19 @@ reference_hvs = encodecolour.(reference_colours);
 
 decodecolour(hv) = reference_colours[decode(rp, hv, reference_hvs)[2]]
 
-# Does a round trip survive? Encode teal, decode it, and compare:
+# Can we encode and decode to recover our original? Encode teal, decode it, and compare:
 
 decodecolour(encodecolour(teal))
 
-# Not bit-identical -- it is the nearest of 2000 random colours, and it is lossy by construction
-# -- but unmistakably the same colour. And now we can finally see the blend from before:
+# Not bit-identical, it is the nearest of 2000 random colours, and it is lossy by construction.
+# However, it is unmistakably the same colour. And now we can finally see the blend from before:
 
 decodecolour(v_blend)
 
 # ## Learning from data: the average colour of a concept
 #
-# Time for something less toy-like. Suppose we observe *categories* paired with colours -- a
-# label and an observation -- and want to learn what colour each category "is". This is the
+# Time for something less toy-like. Suppose we observe *categories* paired with colours (a
+# label and an observation) and want to learn what colour each category "is". This is the
 # classic HDC associative memory: **bind** each observation to its label, **bundle** everything
 # into one hypervector, then **unbind** to query.
 #
@@ -115,9 +115,9 @@ length.(values(categories))
 
 memory = bundle(
     [
-        bind(encode(BipolarHV, label), encodecolour(c))
-            for (label, colours) in categories for c in colours
-    ]
+    bind(encode(BipolarHV, label), encodecolour(c))
+    for (label, colours) in categories for c in colours
+]
 )
 
 # That one vector is the entire model. To ask "what colour is `:plant`?" we unbind the label and
@@ -134,7 +134,7 @@ decodecolour(memory * encode(BipolarHV, :fire))
 decodecolour(memory * encode(BipolarHV, :water))
 
 # Green, red and blue. The bundle averaged each category's colours, and unbinding pulled the
-# right average back out -- from one hypervector holding all three categories at once.
+# right average back out from one hypervector holding all three categories at once.
 #
 # ## Robustness: signal buried in noise
 #
@@ -146,12 +146,12 @@ decodecolour(memory * encode(BipolarHV, :water))
 
 noisy = bundle(
     [
-        bind(
-                encode(BipolarHV, label),
-                bundle([encodecolour(c), encodecolour(RGB(rand(), rand(), rand())), encodecolour(RGB(rand(), rand(), rand()))])
-            )
-            for (label, colours) in categories for c in colours
-    ]
+    bind(
+        encode(BipolarHV, label),
+        bundle([encodecolour(c), encodecolour(RGB(rand(), rand(), rand())), encodecolour(RGB(rand(), rand(), rand()))])
+    )
+    for (label, colours) in categories for c in colours
+]
 )
 decodecolour(noisy * encode(BipolarHV, :plant))
 
@@ -167,7 +167,7 @@ decodecolour(noisy * encode(BipolarHV, :fire))
 # distribution of `R`: `:gaussian` (the default), `:bipolar` (entries `±1`, cheap), and
 # `:sparse_ternary` (mostly zeros, cheapest):
 
-rp_bipolar = RandomProjection(BipolarHV, 3; matrix = :bipolar, seed = 1)
+rp_bipolar = RandomProjection(BipolarHV, 3; matrix=:bipolar, seed=1)
 similarity(encode(rp_bipolar, col2vec(teal)), encode(rp_bipolar, col2vec(sky)))
 
 # For the sign-based types, `θ` is the threshold applied after projection, and it controls the
@@ -201,15 +201,15 @@ similarity(encode(rp_shifted, col2vec(teal)), encode(rp_shifted, col2vec(sky)))
 # similarity against the kernel value:
 
 β = 1.5
-rp_fhrr = RandomProjection(FHRR, 3; β = β, seed = 7, D = 20_000)
+rp_fhrr = RandomProjection(FHRR, 3; β=β, seed=7, D=20_000)
 
 comparison = map(1:6) do _
     x, y = rand(3), rand(3)
     d = norm(x - y)
     (
-        distance = round(d, digits = 3),
-        hdc = round(similarity(encode(rp_fhrr, x), encode(rp_fhrr, y)), digits = 3),
-        kernel = round(exp(-β^2 * d^2 / 2), digits = 3),
+        distance=round(d, digits=3),
+        hdc=round(similarity(encode(rp_fhrr, x), encode(rp_fhrr, y)), digits=3),
+        kernel=round(exp(-β^2 * d^2 / 2), digits=3),
     )
 end
 
@@ -243,7 +243,7 @@ prototype_accuracy = mean(
 # weight vector whenever it misclassifies one. This is the classic
 # [perceptron](https://en.wikipedia.org/wiki/Perceptron), and on hypervectors it is a few lines:
 
-function perceptron(positives, negatives; α = 1, maxiter = 50)
+function perceptron(positives, negatives; α=1, maxiter=50)
     w = zeros(length(first(positives)))
     for _ in 1:maxiter
         errors = 0

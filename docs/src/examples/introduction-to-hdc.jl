@@ -315,7 +315,7 @@ recover(burger, onion_role)                                    # ...and the burg
 #   gets the same hypervector.
 # - **Bundling** mixed ingredients into a filling similar to each of its parts (and let a protein
 #   be "chicken *or* turkey").
-# - **Binding** associated ingredients with roles -- and, being its own inverse, let us
+# - **Binding** associated ingredients with roles and, being its own inverse, let us
 #   un-associate them again.
 # - **Permutation** made order matter.
 # - Different **combinators** (`multiset`, `bundlesequence`, `hashtable`) remember different

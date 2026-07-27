@@ -1,8 +1,8 @@
 # # Encoding data: from raw data to hypervectors
 #
-# Every HDC application starts with the same question: *how do I turn my data into
-# hypervectors?* This tutorial walks through the answer for the four kinds of data you are
-# most likely to have -- tokens, sequences, numbers and feature vectors -- and explains which
+# Every HDC application starts with the same question: *how to turn data into
+# hypervectors?* This tutorial walks through the answer for the four important kinds of data:
+# tokens, sequences, numbers, and feature vectors, and explains which
 # encoder to reach for in each case.
 #
 # It helps to know that `HyperdimensionalComputing.jl` is organised in three layers:
@@ -19,7 +19,7 @@ using HyperdimensionalComputing
 
 # ## Tokens: one object, one hypervector
 #
-# The simplest thing you can do is treat an object as an atomic symbol -- a *token* -- and give
+# The simplest thing you can do is treat an object as an atomic symbol, i.e., a *token*, and give
 # it its own hypervector. That is what [`encode`](@ref) does when you call it without a strategy:
 # it hashes the object and uses the hash to seed the vector.
 
@@ -30,7 +30,7 @@ encode(BinaryHV, "cat")
 
 encode(BinaryHV, "cat") == encode(BinaryHV, "cat")
 
-# Second, *different* objects yield **quasi-orthogonal** hypervectors -- they are as unrelated as
+# Second, *different* objects yield **quasi-orthogonal** hypervectors. This means that they are as unrelated as
 # two random vectors, which is exactly what you want from unrelated symbols:
 
 similarity(encode(BinaryHV, "cat"), encode(BinaryHV, "dog"))
@@ -48,7 +48,7 @@ similaritymetric(BipolarHV), chancesimilarity(BipolarHV)
 # So `0.33` means "unrelated" for a `BinaryHV` and "clearly related" for a `BipolarHV`. Always
 # read a similarity against [`chancesimilarity`](@ref) for its type.
 
-# Any hashable object works -- strings, symbols, characters, numbers, tuples:
+# Any hashable object works, e.g., strings, symbols, characters, numbers, tuples:
 
 similarity(encode(BipolarHV, :cat), encode(BipolarHV, 42))
 
@@ -91,7 +91,7 @@ encode(BinaryHV, "ACGT", NGram(3)) == ngrams([encode(BinaryHV, c) for c in "ACGT
 encode(BinaryHV, "ACGTACGT", KMer(3)) == encode(BinaryHV, "ACGTACGT", NGram(3))
 
 # The practical difference is what *shares structure* with what. Under `KMer`, `"ACG"` and
-# `"CGA"` are unrelated tokens -- they merely happen to use the same letters. Under `NGram`, they
+# `"CGA"` are unrelated tokens: they merely happen to use the same letters. Under `NGram`, they
 # are built from the same three symbol hypervectors, combined in a different order, so they
 # retain a relationship. Pick `KMer` when the window is the meaningful unit (k-mer profiles,
 # character n-gram fingerprints); pick `NGram` when the symbols are meaningful and you want
@@ -109,7 +109,7 @@ encode(BipolarHV, "ACGT", BagOfSymbols()) == multiset(seq)        # order does n
 # ## Example: recognising languages from character k-mers
 #
 # Here is what k-mer encoding buys you. Every language has a characteristic distribution of
-# short character sequences -- `"th"` and `"ing"` are common in English, `"ij"` and `"en"` in
+# short character sequences: `"th"` and `"ing"` are common in English, `"ij"` and `"en"` in
 # Dutch. We never tell the computer any of this: we just encode each text as a k-mer profile and
 # let similarity do the work.
 #
@@ -141,9 +141,9 @@ profiles = Dict(lang => encode(BinaryHV, clean(text), KMer(3)) for (lang, text) 
 ranked = sort(
     [
         (similarity(profiles[a], profiles[b]), a, b)
-            for a in keys(texts) for b in keys(texts) if a < b
+        for a in keys(texts) for b in keys(texts) if a < b
     ];
-    rev = true,
+    rev=true,
 )
 first(ranked, 5)
 
@@ -189,12 +189,12 @@ decode(lvl, encode(lvl, 3.0))
 #
 # ## Feature vectors: `RandomProjection`
 #
-# Finally, data that is already a vector of numbers -- measurements, embeddings, pixel values --
+# Finally, data that is already a vector of numbers, e.g., measurements, embeddings, pixel values,
 # is handled by [`RandomProjection`](@ref), which multiplies your `d`-dimensional input by a
 # fixed random `D × d` matrix and applies a nonlinearity. Distances are approximately preserved
 # (the Johnson–Lindenstrauss lemma), so similar inputs give similar hypervectors.
 
-rp = RandomProjection(BipolarHV, 3; seed = 1)
+rp = RandomProjection(BipolarHV, 3; seed=1)
 
 # Colours are a nice low-dimensional example: RGB triples where we already know which ones
 # *should* be similar.
