@@ -43,10 +43,10 @@ similarity
 nearest_neighbor
 ```
 
-## Encoders
+## Combinators
 
-The package comes with a selected set of encoders for general computing and prototyping
-purposes:
+Combinators take hypervectors and return a hypervector: they compose the primitive
+operations into structured representations.
 
 ```@docs
 multiset
@@ -57,22 +57,35 @@ hashtable
 crossproduct
 ngrams
 graph
-level
-encodelevel
-decodelevel
-convertlevel
 ```
 
-Additionally, we provide an `encode` function and the `AbstractEncoding` type for implementing
-more advances encoding strategies:
+## Encoders
+
+Encoders take *raw data* and return a hypervector. [`encode`](@ref) is the canonical
+entry point: without a strategy it is the deterministic token path, and with an
+[`AbstractEncoding`](@ref) strategy it composes the token path with the combinators
+above.
 
 ```@docs
 encode
+decode
 AbstractEncoding
 BagOfSymbols
 Sequence
 NGram
 KMer
+```
+
+Stateful encoders hold hypervector state that is built once at construction — a level
+set, a projection matrix — so that separately encoded values remain mutually
+comparable. They are passed as the first argument of `encode`, and support the
+inverse map `decode`.
+
+```@docs
+AbstractEncoder
+LevelEncoder
+RandomProjection
+rethreshold
 ```
 
 ## Package extensions

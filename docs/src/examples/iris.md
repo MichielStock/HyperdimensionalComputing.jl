@@ -53,34 +53,35 @@ H_features = [SEPALLENGTH, SEPALWIDTH, PETALLENGTH, PETALWIDTH]
 
 The *values* are continuous numbers, so a purely random mapping would throw away their ordering
 (5.0 cm and 5.1 cm would be as unrelated as 5.0 cm and 100 cm). Instead we use a **level
-encoder**: [`level`](@ref) builds a ladder of hypervectors in which neighbouring levels are
-similar and far-apart levels are dissimilar, so numeric closeness becomes hypervector similarity.
-We lay out one level every 0.1 cm across the observed range:
+encoder**: [`LevelEncoder`](@ref) builds a ladder of hypervectors in which neighbouring levels
+are similar and far-apart levels are dissimilar, so numeric closeness becomes hypervector
+similarity. We lay out one level every 0.1 cm across the observed range:
 
 ````@example iris
 cm = range(extrema(X)...; step = 0.1)
 ````
 
 ````@example iris
-H_cm = level(BinaryHV, length(cm))
+lvl = LevelEncoder(BinaryHV, cm)
 ````
 
-[`encodelevel`](@ref) turns that ladder into a ready-to-use function mapping any number to its
-closest level hypervector:
+The encoder *is* the ladder: it holds the level hypervectors it built at construction, so every
+value encoded through it lands on the same scale. [`encode`](@ref) maps a number to its closest
+level:
 
 ````@example iris
-cm2hv = encodelevel(H_cm, cm)
+encode(lvl, 5.1)
 ````
 
 We can now encode a single flower: bind each feature value to its key and bundle the pairs with
 [`hashtable`](@ref).
 
 ````@example iris
-encode(features::AbstractVector{Float64}) = hashtable(cm2hv.(features), H_features)
+encodeflower(features) = hashtable([encode(lvl, x) for x in features], H_features)
 ````
 
 !!! info "On encoders"
-    `hashtable` and `level` are only two of the built-in encoders. The package ships several
+    `hashtable` is only one of the built-in combinators. The package ships several
     more (`multiset`, `bundlesequence`, `ngrams`, `graph`, ...) for prototyping or training small
     models. For the full catalogue, see the [API reference](../api.md).
 
@@ -88,7 +89,7 @@ Applying it to every column encodes the whole dataset -- 150 flowers, each now a
 hypervector:
 
 ````@example iris
-H_allflowers = map(encode, eachcol(X))
+H_allflowers = map(encodeflower, eachcol(X))
 ````
 
 ## Decoding
@@ -111,18 +112,19 @@ H_flower * SEPALLENGTH
 ````
 
 That hypervector is not exactly any level, but it is *closest* to the right one. The counterpart
-of `encodelevel` is [`decodelevel`](@ref), which builds a decoder that snaps a hypervector back
-to the numeric level it most resembles:
+of `encode` is [`decode`](@ref), which snaps a hypervector back to the numeric level it most
+resembles. The two are only consistent against the *same* encoder -- which is exactly why the
+ladder lives inside the `lvl` object rather than in a pair of loose functions:
 
 ````@example iris
-hv2cm = decodelevel(H_cm, cm)
+decode(lvl, H_flower * SEPALLENGTH)
 ````
 
 Putting it together, a decoder for a whole flower unbinds every feature and reads off its value:
 
 ````@example iris
-decode(hv) = Ref(hv) .* H_features .|> hv2cm
-decode(H_flower)
+decodeflower(hv) = [decode(lvl, hv * key) for key in H_features]
+decodeflower(H_flower)
 ````
 
 Compare that with the flower's true measurements -- the round-trip through $\mathbb{H}$ recovers
@@ -132,10 +134,11 @@ them up to the 0.1 cm resolution of our level ladder:
 X[:, rand(1:size(X, 2))]  # a real measurement vector, for reference on scale
 ````
 
-!!! tip "One-shot level codecs with `convertlevel`"
-    Instead of creating the encoder and decoder separately, [`convertlevel`](@ref) returns both
-    with a single call, which is handier for the vast majority of applications:
-    `cm2hv, hv2cm = convertlevel(H_cm, cm)`.
+!!! tip "Building level encoders"
+    [`LevelEncoder`](@ref) offers several constructor forms: `LevelEncoder(HV, values)` (one
+    level per value, as used here), `LevelEncoder(HV, range, n)` for `n` levels spanning a
+    range, and `LevelEncoder(FHRR, values; β)`, which uses fractional power encoding to
+    represent a *continuous* range instead of a discrete ladder.
 
 ## Training a small model
 
@@ -155,15 +158,15 @@ its class. The prototypes are not just abstract vectors -- decoding them recover
 close to the class averages:
 
 ````@example iris
-[decode(H_setosa)'; mean(X[:, vec(y) .== "Iris-setosa"], dims = 2)']
+[decodeflower(H_setosa)'; mean(X[:, vec(y) .== "Iris-setosa"], dims = 2)']
 ````
 
 ````@example iris
-[decode(H_versicolor)'; mean(X[:, vec(y) .== "Iris-versicolor"], dims = 2)']
+[decodeflower(H_versicolor)'; mean(X[:, vec(y) .== "Iris-versicolor"], dims = 2)']
 ````
 
 ````@example iris
-[decode(H_virginica)'; mean(X[:, vec(y) .== "Iris-virginica"], dims = 2)']
+[decodeflower(H_virginica)'; mean(X[:, vec(y) .== "Iris-virginica"], dims = 2)']
 ````
 
 Pretty close! Let's evaluate the model properly. First, we split the data into a training and a
