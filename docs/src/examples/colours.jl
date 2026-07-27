@@ -188,7 +188,7 @@ similarity(encode(rp_shifted, col2vec(teal)), encode(rp_shifted, col2vec(sky)))
 #
 # ## The kernel connection
 #
-# One combination deserves special mention. With [`FHRR`](@ref) hypervectors and a Gaussian
+# One combination is worth singling out. With [`FHRR`](@ref) hypervectors and a Gaussian
 # matrix, `RandomProjection` is *exactly*
 # [random Fourier features](https://en.wikipedia.org/wiki/Random_feature): the similarity between
 # two encoded points approximates a Gaussian (RBF) kernel with bandwidth `β`,
@@ -217,7 +217,7 @@ end
 
 comparison
 
-# This is a genuine bridge between HDC and kernel methods: an *explicit*, finite-dimensional
+# This connects HDC to kernel methods: it gives an *explicit*, finite-dimensional
 # feature map for a kernel that is normally only accessible implicitly through dot products.
 #
 # ## Sharpening a boundary

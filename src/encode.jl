@@ -5,7 +5,7 @@ The encoder layer: turning raw data into hypervectors.
 
 Layer taxonomy of the package:
 - primitives   (operations.jl): bundle, bind, shift, perturbate
-- combinators  (encoding.jl):   multiset, ngrams, hashtable, ... — hypervectors
+- combinators  (encoding.jl):   multiset, ngrams, hashtable, ... -- hypervectors
                                 in, hypervector out
 - encoders     (this file):     raw data in, hypervector out
 
@@ -15,7 +15,7 @@ token path with the existing combinators. Stateful encoders live in the
 once at construction and slot in as the first argument of `encode` (and support
 the inverse map `decode`). `LevelEncoder` (scalars, shared level set) and
 `RandomProjection` (feature vectors, shared projection matrix) are the current
-members — nothing here may claim `encode(::SomeState, ...)` for other purposes.
+members -- nothing here may claim `encode(::SomeState, ...)` for other purposes.
 =#
 
 """
@@ -103,7 +103,7 @@ Not the same operation as [`NGram`](@ref): `KMer` hashes each window as a
 whole, so `"AC"` and `"CA"` get unrelated hypervectors; `NGram` encodes the
 *symbols* and composes windows by shift-binding, so windows that share symbols
 share structure. The two produce different hypervectors with different
-properties — pick deliberately.
+properties -- pick deliberately.
 
 # Examples
 
@@ -127,7 +127,7 @@ end
 
 Sequence-encoding strategy: encode each **symbol** to a hypervector, compose
 every window of `n` consecutive symbols by shift-binding, and bundle the
-windows — i.e. the existing [`ngrams`](@ref) combinator applied to
+windows -- i.e. the existing [`ngrams`](@ref) combinator applied to
 token-encoded symbols. See [`KMer`](@ref) for how this differs from k-mer
 hashing.
 
@@ -162,7 +162,7 @@ struct Sequence <: AbstractEncoding end
     BagOfSymbols()
 
 Sequence-encoding strategy: encode each symbol to a hypervector and bundle them
-orderlessly with [`multiset`](@ref) — the position-free counterpart of
+orderlessly with [`multiset`](@ref) -- the position-free counterpart of
 [`Sequence`](@ref) (and the `n = 1` corner of [`NGram`](@ref)).
 """
 struct BagOfSymbols <: AbstractEncoding end

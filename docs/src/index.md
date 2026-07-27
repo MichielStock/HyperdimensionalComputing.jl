@@ -10,9 +10,11 @@ brain-inspired paradigm that represents information as very high-dimensional vec
 nearly orthogonal, and that single fact makes it possible to superpose, associate and sequence
 concepts inside one fixed-size vector without them interfering.
 
-The result is a computing style that is fast, robust to noise, remarkably data-efficient, and
-simple enough to implement in a few hundred lines -- an appealing alternative to deep learning
-for structured and biological data.
+Because information is spread across all `D` dimensions rather than stored in particular ones,
+the representation degrades gracefully: a hypervector can lose a large fraction of its
+components and still be recognised. The operations reduce to bit arithmetic, and the whole
+paradigm fits in a few hundred lines of code. Stock et al. (2024), cited below, survey where
+this pays off on biological data.
 
 ## Installation
 
@@ -60,16 +62,16 @@ switch between them by changing a single name.
 
 ## Where to go next
 
-- **[Introduction to HDC](examples/introduction-to-hdc.md)** — the operations, taught by cooking
+- **[Introduction to HDC](examples/introduction-to-hdc.md)** -- the operations, taught by cooking
   a taco and a hamburger. Start here.
-- **[Encoding data](examples/encoding-data.md)** — turning tokens, sequences, numbers and feature
+- **[Encoding data](examples/encoding-data.md)** -- turning tokens, sequences, numbers and feature
   vectors into hypervectors; includes recognising languages from character k-mers.
-- **[Colours](examples/colours.md)** — random projections for continuous data, associative
+- **[Colours](examples/colours.md)** -- random projections for continuous data, associative
   memories, and the link to kernel methods.
-- **[What's the Dollar of Mexico?](examples/whats-the-dollar-of-mexico.md)** — Kanerva's classic
+- **[What's the Dollar of Mexico?](examples/whats-the-dollar-of-mexico.md)** -- Kanerva's classic
   analogical-reasoning example.
-- **[Iris dataset](examples/iris.md)** — a complete classification workflow on numeric data.
-- **[API reference](api.md)** — every exported function.
+- **[Iris dataset](examples/iris.md)** -- a complete classification workflow on numeric data.
+- **[API reference](api.md)** -- every exported function.
 
 ## Citing
 

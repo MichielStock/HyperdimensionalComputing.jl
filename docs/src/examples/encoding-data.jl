@@ -226,8 +226,8 @@ end
 
 encode(BinaryHV, "ACGTACGT", EveryOther()) == encode(BinaryHV, "AGAG", BagOfSymbols())
 
-# That is the whole extension point: subtype [`AbstractEncoding`](@ref), add one method, and your
-# strategy composes with everything else in the package.
+# Subtype [`AbstractEncoding`](@ref), add one method, and your strategy composes with
+# everything else in the package.
 #
 # ## Summary
 #

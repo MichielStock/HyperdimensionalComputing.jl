@@ -232,8 +232,8 @@ draw(
 rp = RandomProjection(BipolarHV, 4; seed = 42)
 H_projected = [encode(rp, X[:, i]) for i in 1:size(X, 2)]
 
-# That is the entire encoder: one line, no keys, no level ladder. We can drop it into exactly the
-# same nearest-prototype workflow:
+# One line, no keys, no level ladder. We can drop it into exactly the same nearest-prototype
+# workflow:
 
 function traintest_projection(; split = 0.8)
     test = rand(length(y)) .> split

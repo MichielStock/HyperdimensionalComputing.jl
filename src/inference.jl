@@ -41,7 +41,7 @@ of the Hermitian inner product *is* the cosine similarity, since every element h
 unit modulus.)
 
 Use together with [`chancesimilarity`](@ref), which tells you what an
-*unrelated* pair scores under that metric — the number you need to judge whether a
+*unrelated* pair scores under that metric -- the number you need to judge whether a
 given similarity is large.
 
 # Examples
@@ -72,7 +72,7 @@ type `HV`: the value that means "unrelated".
 
 This is the baseline you need to interpret a similarity score, and it is **not
 always zero**. Under cosine (see [`similaritymetric`](@ref)) unrelated hypervectors
-score `0.0`, but under Jaccard they score `1/3` — so a similarity of `0.35` is
+score `0.0`, but under Jaccard they score `1/3` -- so a similarity of `0.35` is
 strong evidence of a relationship for a [`BipolarHV`](@ref) and no evidence at all
 for a [`BinaryHV`](@ref).
 
