@@ -31,10 +31,22 @@ encode(BinaryHV, "cat")
 encode(BinaryHV, "cat") == encode(BinaryHV, "cat")
 
 # Second, *different* objects yield **quasi-orthogonal** hypervectors -- they are as unrelated as
-# two random vectors, which is exactly what you want from unrelated symbols. (For `BinaryHV` the
-# default similarity is Jaccard, whose baseline for unrelated vectors is $1/3$ rather than $0$.)
+# two random vectors, which is exactly what you want from unrelated symbols:
 
 similarity(encode(BinaryHV, "cat"), encode(BinaryHV, "dog"))
+
+# Is that number small? It depends on the metric, and this is a common source of confusion.
+# `BinaryHV` uses Jaccard similarity, for which *unrelated* vectors score $1/3$ -- not $0$. Two
+# helper functions save you from having to remember which type uses what:
+
+similaritymetric(BinaryHV), chancesimilarity(BinaryHV)
+
+#
+
+similaritymetric(BipolarHV), chancesimilarity(BipolarHV)
+
+# So `0.33` means "unrelated" for a `BinaryHV` and "clearly related" for a `BipolarHV`. Always
+# read a similarity against [`chancesimilarity`](@ref) for its type.
 
 # Any hashable object works -- strings, symbols, characters, numbers, tuples:
 

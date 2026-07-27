@@ -171,6 +171,21 @@ deterministic tie-breaking ([`BinaryHV`](@ref), [`BipolarHV`](@ref)), elementwis
 addition ([`TernaryHV`](@ref), [`RealHV`](@ref)), fuzzy aggregation
 ([`GradedHV`](@ref), [`GradedBipolarHV`](@ref)) or phasor addition ([`FHRR`](@ref)).
 
+!!! warning "Bundling is m-way, not pairwise"
+    `bundle` combines **all** its inputs in one go, and for most types the result depends
+    on how many there are -- a majority vote over `m` inputs, a `1/√m` rescaling, a
+    renormalization. Bundling is therefore *not* associative for [`BinaryHV`](@ref),
+    [`BipolarHV`](@ref), [`RealHV`](@ref) and [`FHRR`](@ref) (it is for
+    [`TernaryHV`](@ref) and the graded types, whose rules happen to be associative).
+
+    Three spellings do the right thing, because each reaches `bundle` with every input at
+    once: `bundle(hvs)`, `sum(hvs)`, and chained `x + y + z` (Julia parses a chain of `+`
+    as a single variadic call).
+
+    Folding pairwise does **not**: `(x + y) + z`, `reduce(+, hvs)` and `foldl(+, hvs)`
+    bundle a bundle. The result is heavily biased towards the last inputs and loses the
+    defining property that a bundle is equally similar to each of its parts.
+
 # See also
 
 [`bind`](@ref), [`similarity`](@ref)
@@ -182,6 +197,12 @@ function bundle(hdvs; kwargs...)
 end
 
 Base.:+(u::HV, v::AbstractArray...) where {HV <: AbstractHV} = bundle((u, v...))
+
+# `sum` on a collection of hypervectors means bundling them, all at once. Without this
+# method Base would fold pairwise with `+`, which bundles a bundle and biases the result
+# towards the last elements (see the warning on `bundle`).
+Base.sum(hvs::AbstractVector{<:AbstractHV}) = bundle(hvs)
+Base.sum(hvs::Tuple{Vararg{AbstractHV}}) = bundle(hvs)
 
 # BINDING
 # -------

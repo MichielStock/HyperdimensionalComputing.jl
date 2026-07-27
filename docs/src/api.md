@@ -40,6 +40,8 @@ perturbate!
 ```@docs
 similarity
 δ
+similaritymetric
+chancesimilarity
 nearest_neighbor
 ```
 

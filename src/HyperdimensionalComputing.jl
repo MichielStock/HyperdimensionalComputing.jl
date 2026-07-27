@@ -60,6 +60,8 @@ export encode,
 include("inference.jl")
 export similarity,
     δ,
+    similaritymetric,
+    chancesimilarity,
     nearest_neighbor
 
 
