@@ -27,7 +27,7 @@ repo_owner = split(repo_url, "/")[1]
 makedocs(;
     modules = [HyperdimensionalComputing],
     authors = "KERMIT research group and contributors",
-    repo = "https://github.com/$repo_url/blob/{commit}{path}#{line}",
+    repo = Remotes.GitHub(repo_owner, repo_name),
     sitename = "HyperdimensionalComputing.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
@@ -45,6 +45,7 @@ makedocs(;
             "Predictive modelling with HDC: Iris dataset" => "examples/iris.md",
         ],
         "API" => "api.md",
+        "Developer guide" => "developers.md",
     ],
     checkdocs = :exports,
     warnonly = [:missing_docs],
