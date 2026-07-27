@@ -40,6 +40,7 @@ makedocs(;
         "Examples" => [
             "Introduction to HDC" => "examples/introduction-to-hdc.md",
             "Encoding data" => "examples/encoding-data.md",
+            "Colours: random projections" => "examples/colours.md",
             "What's the Dollar of Mexico?" => "examples/whats-the-dollar-of-mexico.md",
             "Predictive modelling with HDC: Iris dataset" => "examples/iris.md",
         ],
