@@ -1,5 +1,5 @@
 using Random #hide
-# # Introduction to Hyperdimensional Computing
+# # Introduction to Hyperdimensional Computing (the HDC kitchen)
 #
 # Hyperdimensional Computing (HDC) is a brain-inspired computational paradigm that represents
 # and manipulates information using high-dimensional vectors called **hypervectors**. These
@@ -8,9 +8,21 @@ using Random #hide
 # properties that allow for robust, fault-tolerant computation based on a defined set of
 # operations that enable representing any object or structure as a hypervector.
 #
-# Our running example is deliberately simple: we will "cook" a set of plates using hypervectors,
-# showcase how to compare them, and finally how to do some inference using algebraic operations
-# over our "food" hypervectors.
+# Rather than listing those properties in the abstract, let's *cook* with them. In this tutorial
+# we treat HDC as a kitchen:
+#
+# | HDC concept           | Kitchen analogy                              |
+# |:----------------------|:---------------------------------------------|
+# | Mapping ($\varphi$)   | Turning an ingredient into a hypervector     |
+# | Bundling ($\oplus$)   | *Mixing* ingredients into a filling          |
+# | Binding ($\otimes$)   | *Associating* an ingredient with a role      |
+# | Permutation ($\rho$)  | *Ordering* the steps of a recipe             |
+# | Similarity ($\delta$) | Asking *"are these two plates alike?"*       |
+#
+# Our running example is deliberately simple: we will "cook" a 🌮 **taco** and a 🍔 **hamburger**,
+# and then add a third plate, a 🥪 **chicken club sandwich**, to see how the plates relate to
+# each other -- and finally do some inference using algebraic operations over our "food"
+# hypervectors.
 #
 # # Setting up our experiment
 #
@@ -211,10 +223,15 @@ burger = hashtable(roles, [🍔, 🥩, 🥬, 🍅, 🧀])
 # it?"*, `bundlesequence` also captures *"in what order?"*, and `hashtable` captures *"what plays
 # which role?"* -- the one we need to reason about recipes.
 #
-# !!! tip "More encoders"
-#     `multiset`, `bundlesequence`, and `hashtable` are just three of the built-in encoders. The
-#     package also provides `multibind`, `bindsequence`, `ngrams`, `graph`, `crossproduct`, level
-#     encoders, and more -- see the [API reference](../api.md) for the full catalogue.
+# !!! tip "Combinators and encoders"
+#     `multiset`, `bundlesequence` and `hashtable` are three of the built-in **combinators**:
+#     they take hypervectors and return a hypervector. The package also provides `multibind`,
+#     `bindsequence`, `ngrams`, `graph` and `crossproduct`.
+#
+#     One layer up sit the **encoders**, which turn *raw data* into hypervectors: `encode` with a
+#     strategy such as `KMer` or `NGram` for sequences, and the stateful `LevelEncoder` (numbers)
+#     and `RandomProjection` (feature vectors). See the [API reference](../api.md) for the full
+#     catalogue.
 #
 # ## Comparison: are two plates alike?
 #
@@ -289,3 +306,26 @@ recover(burger, onion_role)                                    # ...and the burg
 # The system answers `lettuce`: *onion is to the taco what lettuce is to the burger*. We have
 # inferred an analogy the recipes never stated explicitly -- the kind of associative reasoning
 # that makes hyperdimensional representations so powerful.
+
+# ## Wrap-up
+#
+# In one sitting we cooked three plates and met the whole HDC toolkit:
+#
+# - **Mapping** turned emojis into hypervectors, deterministically: the same ingredient always
+#   gets the same hypervector.
+# - **Bundling** mixed ingredients into a filling similar to each of its parts (and let a protein
+#   be "chicken *or* turkey").
+# - **Binding** associated ingredients with roles -- and, being its own inverse, let us
+#   un-associate them again.
+# - **Permutation** made order matter.
+# - Different **combinators** (`multiset`, `bundlesequence`, `hashtable`) remember different
+#   things about the same ingredients.
+# - **Similarity** told us which plates are alike, and **algebra** let us query recipes and map
+#   concepts from one dish to another.
+#
+# The takeaways generalize far beyond the kitchen: all data lives in the *same* high-dimensional
+# space, the representation is robust to noise thanks to the blessing of dimensionality, and
+# hypervectors plus a handful of encoders can represent richly structured data.
+#
+# From here, have a look at *"What's the Dollar of Mexico?"* for more analogical reasoning, or at
+# the *Iris dataset* example for a full classification workflow on numeric data.
