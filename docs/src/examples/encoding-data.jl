@@ -141,9 +141,9 @@ profiles = Dict(lang => encode(BinaryHV, clean(text), KMer(3)) for (lang, text) 
 ranked = sort(
     [
         (similarity(profiles[a], profiles[b]), a, b)
-        for a in keys(texts) for b in keys(texts) if a < b
+            for a in keys(texts) for b in keys(texts) if a < b
     ];
-    rev=true,
+    rev = true,
 )
 first(ranked, 5)
 
@@ -194,7 +194,7 @@ decode(lvl, encode(lvl, 3.0))
 # fixed random `D × d` matrix and applies a nonlinearity. Distances are approximately preserved
 # (the Johnson–Lindenstrauss lemma), so similar inputs give similar hypervectors.
 
-rp = RandomProjection(BipolarHV, 3; seed=1)
+rp = RandomProjection(BipolarHV, 3; seed = 1)
 
 # Colours are a nice low-dimensional example: RGB triples where we already know which ones
 # *should* be similar.
