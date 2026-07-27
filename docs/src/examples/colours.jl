@@ -19,7 +19,8 @@
 
 using HyperdimensionalComputing
 using Colors, Random, Statistics, LinearAlgebra
-Random.seed!(42) #hide
+Random.seed!(42);
+nothing # hide
 
 # ## Encoding colours
 #

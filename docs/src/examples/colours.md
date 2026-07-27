@@ -24,7 +24,8 @@ $[0,1]^3$, and we already have strong intuitions about which colours are alike.
 ````@example colours
 using HyperdimensionalComputing
 using Colors, Random, Statistics, LinearAlgebra
-Random.seed!(42) #hide
+Random.seed!(42);
+nothing # hide
 ````
 
 ## Encoding colours
