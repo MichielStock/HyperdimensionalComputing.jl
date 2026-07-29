@@ -28,6 +28,81 @@ similarity(u::GradedHV, v::GradedHV) = sim_jacc(u, v)
 similarity(u::FHRR, v::FHRR) = real(dot(u.v, v.v)) / length(u)
 
 """
+    similaritymetric(HV)
+    similaritymetric(hv::AbstractHV)
+
+Which metric [`similarity`](@ref) uses for hypervectors of type `HV`, as a `Symbol`.
+
+`:jaccard` for [`BinaryHV`](@ref) and [`GradedHV`](@ref), whose elements are
+non-negative, and `:cosine` for the types that can take negative values --
+[`BipolarHV`](@ref), [`TernaryHV`](@ref), [`RealHV`](@ref),
+[`GradedBipolarHV`](@ref) and [`FHRR`](@ref). (For `FHRR` the normalized real part
+of the Hermitian inner product *is* the cosine similarity, since every element has
+unit modulus.)
+
+Use together with [`chancesimilarity`](@ref), which tells you what an
+*unrelated* pair scores under that metric -- the number you need to judge whether a
+given similarity is large.
+
+# Examples
+
+```jldoctest
+julia> similaritymetric(BinaryHV), similaritymetric(BipolarHV)
+(:jaccard, :cosine)
+
+julia> similaritymetric(BinaryHV(; D = 10))   # also works on an instance
+:jaccard
+```
+
+# See also
+
+[`similarity`](@ref), [`chancesimilarity`](@ref)
+"""
+similaritymetric(::Type{<:AbstractHV}) = :cosine
+similaritymetric(::Type{BinaryHV}) = :jaccard
+similaritymetric(::Type{<:GradedHV}) = :jaccard
+similaritymetric(hv::AbstractHV) = similaritymetric(typeof(hv))
+
+"""
+    chancesimilarity(HV)
+    chancesimilarity(hv::AbstractHV)
+
+The expected [`similarity`](@ref) between two *independent random* hypervectors of
+type `HV`: the value that means "unrelated".
+
+This is the baseline you need to interpret a similarity score, and it is **not
+always zero**. Under cosine (see [`similaritymetric`](@ref)) unrelated hypervectors
+score `0.0`, but under Jaccard they score `1/3` -- so a similarity of `0.35` is
+strong evidence of a relationship for a [`BipolarHV`](@ref) and no evidence at all
+for a [`BinaryHV`](@ref).
+
+!!! note
+    The value assumes hypervectors built with the type's default element
+    distribution. Passing a custom `distr` to [`RealHV`](@ref), [`GradedHV`](@ref)
+    or [`GradedBipolarHV`](@ref) can shift the baseline: a distribution that is not
+    centred makes random vectors point in a common direction, raising the chance
+    level above zero.
+
+# Examples
+
+```jldoctest
+julia> chancesimilarity(BipolarHV)
+0.0
+
+julia> chancesimilarity(BinaryHV)      # Jaccard: unrelated is 1/3, not 0
+0.3333333333333333
+```
+
+# See also
+
+[`similarity`](@ref), [`similaritymetric`](@ref)
+"""
+chancesimilarity(::Type{<:AbstractHV}) = 0.0
+chancesimilarity(::Type{BinaryHV}) = 1 / 3
+chancesimilarity(::Type{<:GradedHV}) = 1 / 3
+chancesimilarity(hv::AbstractHV) = chancesimilarity(typeof(hv))
+
+"""
     similarity(u::AbstractVector, v::AbstractVector; method::Symbol)
 
 Computes similarity between two (hyper)vectors using a `method` ∈

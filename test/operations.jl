@@ -145,6 +145,30 @@ Random.seed!(42)
         end
     end
 
+    # Bundling is m-way: it combines all inputs at once, and for most types the rule
+    # depends on how many there are. Chained `+` and `sum` must reach `bundle` with the
+    # whole collection; folding pairwise bundles a bundle and is NOT equivalent.
+    @testset "bundle is m-way, not pairwise" begin
+        for HV in [BinaryHV, BipolarHV, TernaryHV, RealHV, GradedHV, GradedBipolarHV, FHRR]
+            x = encode(HV, :a; D = 1000)
+            y = encode(HV, :b; D = 1000)
+            z = encode(HV, :c; D = 1000)
+            reference = bundle([x, y, z])
+            ## Julia parses a chain of `+` as one variadic call, so this is a 3-way bundle
+            @test x + y + z == reference
+            @test sum([x, y, z]) == reference
+            @test sum((x, y, z)) == reference
+        end
+
+        ## the semantic property: a bundle is equally similar to each of its parts,
+        ## whereas pairwise folding is dominated by the last inputs
+        hvs = [encode(BipolarHV, i; D = 10_000) for i in 1:5]
+        spread(hv) = (sims = [similarity(hv, h) for h in hvs]; maximum(sims) - minimum(sims))
+        @test spread(bundle(hvs)) < 0.1
+        @test spread(reduce(+, hvs)) > 0.2
+        @test similarity(reduce(+, hvs), last(hvs)) > similarity(reduce(+, hvs), first(hvs))
+    end
+
     @testset "unbind" begin
         # XOR- and multiplication-based types: binding is self-inverse, roundtrip exact
         for HV in [BinaryHV, BipolarHV, TernaryHV]
@@ -207,8 +231,9 @@ Random.seed!(42)
         hvm = perturbate(hv1, m; rng = Xoshiro(1))
         @test all(hvm.v[.!m] .== hv1.v[.!m])
         @test all(abs.(hvm.v[m]) .≈ 1)
-        # `level` for FHRR uses its own ^-based method, not perturbation
-        @test level(FHRR(; D = 100), 5) isa Vector{<:FHRR}
+        # the perturbation ladder (LevelEncoder with an explicit level count)
+        # works for FHRR thanks to the phase-resampling methods above
+        @test LevelEncoder(FHRR, (0, 1), 5; D = 100).levels isa Vector{<:FHRR}
     end
 
 end

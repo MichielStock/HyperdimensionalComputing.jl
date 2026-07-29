@@ -71,8 +71,30 @@
         @test δ === similarity
     end
 
+    @testset "similarity metric traits" begin
+        @test similaritymetric(BinaryHV) == :jaccard
+        @test similaritymetric(GradedHV) == :jaccard
+        for HV in [BipolarHV, TernaryHV, RealHV, GradedBipolarHV, FHRR]
+            @test similaritymetric(HV) == :cosine
+        end
+        ## instance forms agree with the type forms
+        @test similaritymetric(BinaryHV(; D = 10)) == :jaccard
+        @test chancesimilarity(BinaryHV(; D = 10)) == chancesimilarity(BinaryHV)
+
+        ## the documented baseline must match what unrelated hypervectors actually score
+        for HV in [BinaryHV, BipolarHV, TernaryHV, RealHV, GradedHV, GradedBipolarHV, FHRR]
+            measured = mean(similarity(HV(; D = 5_000), HV(; D = 5_000)) for _ in 1:50)
+            @test isapprox(measured, chancesimilarity(HV); atol = 0.02)
+        end
+
+        ## FHRR's similarity really is cosine, as the docstring claims
+        a, b = FHRR(; D = 1000), FHRR(; D = 1000)
+        av, bv = collect(a), collect(b)
+        @test similarity(a, b) ≈ real(dot(av, bv)) / (norm(av) * norm(bv))
+    end
+
     @testset "Similarity matrix" begin
-        levels = level(RealHV(; D = 100), 10)
+        levels = LevelEncoder(RealHV, (0, 1), 10; D = 100).levels
         M = similarity(levels)
         @test M isa Matrix
         @test size(M) == (10, 10)

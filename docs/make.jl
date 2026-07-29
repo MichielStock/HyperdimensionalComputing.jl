@@ -27,7 +27,7 @@ repo_owner = split(repo_url, "/")[1]
 makedocs(;
     modules = [HyperdimensionalComputing],
     authors = "KERMIT research group and contributors",
-    repo = "https://github.com/$repo_url/blob/{commit}{path}#{line}",
+    repo = Remotes.GitHub(repo_owner, repo_name),
     sitename = "HyperdimensionalComputing.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
@@ -39,21 +39,16 @@ makedocs(;
         "HyperdimensionalComputing.jl" => "index.md",
         "Examples" => [
             "Introduction to HDC" => "examples/introduction-to-hdc.md",
+            "Encoding data" => "examples/encoding-data.md",
+            "Colours: random projections" => "examples/colours.md",
             "What's the Dollar of Mexico?" => "examples/whats-the-dollar-of-mexico.md",
+            "Predictive modelling with HDC: Iris dataset" => "examples/iris.md",
         ],
         "API" => "api.md",
+        "Developer guide" => "developers.md",
     ],
     checkdocs = :exports,
+    warnonly = [:missing_docs],
 )
 
-deploydocs(;
-    repo = "github.com/$repo_url",
-    devbranch = begin
-        current_branch = get(ENV, "GITHUB_REF", "refs/heads/main")
-        dev_branch = if occursin("develop", current_branch)
-            "develop"
-        else
-            "main"
-        end
-    end,
-)
+deploydocs(; repo = "github.com/$repo_url")
